@@ -34,98 +34,55 @@ namespace Exman.Services
         
         public async Task<IEnumerable<ApiRequest>> GetRecentRequestsAsync(int limit = 20)
         {
-            if (!File.Exists(_historyFilePath))
-                return new List<ApiRequest>();
-            
-            try 
-            {
-                using (var fileStream = new FileStream(_historyFilePath, FileMode.Open, FileAccess.Read, FileShare.Read))
-                using (var streamReader = new StreamReader(fileStream))
-                {
-                    var json = streamReader.ReadToEnd();
-                    var allRequests = JsonSerializer.Deserialize<List<ApiRequest>>(json, _jsonOptions) ?? new List<ApiRequest>();
-                    
-                    // Return most recent requests first, limited by the count
-                    return allRequests
-                        .OrderByDescending(r => r.LastUsed)
-                        .Take(Math.Min(limit, allRequests.Count));
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error loading request history: {ex.Message}");
-                return new List<ApiRequest>();
-            }
+            var historyItems = await LoadHistoryItemsAsync();
+            return historyItems
+                .OrderByDescending(h => h.Timestamp)
+                .Take(Math.Min(limit, historyItems.Count))
+                .Select(h => h.Request);
         }
         
-        public async Task<IEnumerable<ApiRequest>> GetHistoryAsync()
+        public async Task<IEnumerable<RequestHistoryItem>> GetHistoryAsync()
         {
-            if (!File.Exists(_historyFilePath))
-                return new List<ApiRequest>();
-            
-            try 
-            {
-                using (var fileStream = new FileStream(_historyFilePath, FileMode.Open, FileAccess.Read, FileShare.Read))
-                using (var streamReader = new StreamReader(fileStream))
-                {
-                    var json = streamReader.ReadToEnd();
-                    var allRequests = JsonSerializer.Deserialize<List<ApiRequest>>(json, _jsonOptions) ?? new List<ApiRequest>();
-                    
-                    // Return most recent requests first
-                    return allRequests.OrderByDescending(r => r.LastUsed);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error loading request history: {ex.Message}");
-                return new List<ApiRequest>();
-            }
-        }
-        
-        public async Task<IEnumerable<ApiResponse>> GetRequestHistoryAsync()
-        {
-            if (!File.Exists(_historyFilePath))
-            {
-                return new List<ApiResponse>();
-            }
-            
-            try
-            {
-                using (var fileStream = new FileStream(_historyFilePath, FileMode.Open, FileAccess.Read, FileShare.Read))
-                using (var streamReader = new StreamReader(fileStream))
-                {
-                    var json = streamReader.ReadToEnd();
-                    return JsonSerializer.Deserialize<List<ApiResponse>>(json, _jsonOptions) ?? new List<ApiResponse>();
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error loading request history: {ex.Message}");
-                return new List<ApiResponse>();
-            }
+            var historyItems = await LoadHistoryItemsAsync();
+            return historyItems.OrderByDescending(h => h.Timestamp);
         }
         
         public async Task AddToHistoryAsync(ApiRequest request)
         {
-            // Set last used timestamp
-            request.LastUsed = DateTime.Now;
+            // Create a minimal response for requests without responses
+            var response = new ApiResponse
+            {
+                StatusCode = System.Net.HttpStatusCode.OK,
+                Body = "No response data"
+            };
             
-            // Create a copy of the request to store in history
-            var requestCopy = CloneRequest(request);
+            await AddToHistoryAsync(request, response);
+        }
+        
+        public async Task AddToHistoryAsync(ApiRequest request, ApiResponse response)
+        {
+            // Create a new history item
+            var historyItem = new RequestHistoryItem
+            {
+                Id = Guid.NewGuid().ToString(),
+                Request = CloneRequest(request),
+                Response = response,
+                Timestamp = DateTime.Now
+            };
             
-            var history = await LoadHistoryAsync();
+            var history = await LoadHistoryItemsAsync();
             
             // Remove existing request with the same URL and method to avoid duplicates
-            var existingRequest = history.FirstOrDefault(r => 
-                r.Url == requestCopy.Url && r.Method == requestCopy.Method);
+            var existingItem = history.FirstOrDefault(h => 
+                h.Request.Url == request.Url && h.Request.Method == request.Method);
                 
-            if (existingRequest != null)
+            if (existingItem != null)
             {
-                history.Remove(existingRequest);
+                history.Remove(existingItem);
             }
             
             // Add the new request to the beginning of the list
-            history.Insert(0, requestCopy);
+            history.Insert(0, historyItem);
             
             // Keep only the most recent requests
             while (history.Count > MaxHistoryItems)
@@ -136,31 +93,24 @@ namespace Exman.Services
             await SaveHistoryAsync(history);
         }
         
-        public async Task AddToHistoryAsync(ApiRequest request, ApiResponse response)
-        {
-            // Simply call the existing method for now
-            // In a future enhancement, we could store the response data too
-            await AddToHistoryAsync(request);
-        }
-        
         public async Task RemoveFromHistoryAsync(string requestId)
         {
             if (string.IsNullOrEmpty(requestId))
                 return;
                 
-            var history = await LoadHistoryAsync();
-            var requestToRemove = history.FirstOrDefault(r => r.Id == requestId);
+            var history = await LoadHistoryItemsAsync();
+            var itemToRemove = history.FirstOrDefault(h => h.Id == requestId);
             
-            if (requestToRemove != null)
+            if (itemToRemove != null)
             {
-                history.Remove(requestToRemove);
+                history.Remove(itemToRemove);
                 await SaveHistoryAsync(history);
             }
         }
         
         public async Task ClearHistoryAsync()
         {
-            await SaveHistoryAsync(new List<ApiRequest>());
+            await SaveHistoryAsync(new List<RequestHistoryItem>());
         }
         
         public async Task<bool> SaveToCollectionAsync(ApiRequest request, string collectionId)
@@ -182,32 +132,34 @@ namespace Exman.Services
             if (string.IsNullOrEmpty(requestId))
                 return null;
                 
-            var history = await LoadHistoryAsync();
-            return history.FirstOrDefault(r => r.Id == requestId);
+            var history = await LoadHistoryItemsAsync();
+            var item = history.FirstOrDefault(h => h.Id == requestId);
+            return item?.Request;
         }
         
-        private async Task<List<ApiRequest>> LoadHistoryAsync()
+        private async Task<List<RequestHistoryItem>> LoadHistoryItemsAsync()
         {
             if (!File.Exists(_historyFilePath))
-                return new List<ApiRequest>();
+                return new List<RequestHistoryItem>();
                 
             try
             {
                 using (var fileStream = new FileStream(_historyFilePath, FileMode.Open, FileAccess.Read, FileShare.Read))
                 using (var streamReader = new StreamReader(fileStream))
                 {
-                    var json = streamReader.ReadToEnd();
-                    return JsonSerializer.Deserialize<List<ApiRequest>>(json, _jsonOptions) ?? new List<ApiRequest>();
+                    var json = await streamReader.ReadToEndAsync();
+                    var result = JsonSerializer.Deserialize<List<RequestHistoryItem>>(json, _jsonOptions);
+                    return result ?? new List<RequestHistoryItem>();
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error loading request history: {ex.Message}");
-                return new List<ApiRequest>();
+                return new List<RequestHistoryItem>();
             }
         }
         
-        private async Task SaveHistoryAsync(List<ApiRequest> history)
+        private async Task SaveHistoryAsync(List<RequestHistoryItem> history)
         {
             try
             {

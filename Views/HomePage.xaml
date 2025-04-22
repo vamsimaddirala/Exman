@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Exman.Views.HomePage"
+             Title="Home">
+    
+    <ScrollView>
+        <Grid RowDefinitions="Auto,Auto,Auto" 
+              Padding="20"
+              RowSpacing="20">
+            
+            <!-- Hero Section -->
+            <Border Grid.Row="0"
+                   BackgroundColor="{StaticResource BackgroundSecondary}"
+                   StrokeThickness="0"
+                   StrokeShape="RoundRectangle 8,8,8,8"
+                   Padding="20">
+                <Grid RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="10">
+                    <Label Grid.Row="0" 
+                           Text="Welcome to ExMan" 
+                           FontSize="32" 
+                           FontAttributes="Bold" 
+                           HorizontalOptions="Center" />
+                    
+                    <Label Grid.Row="1" 
+                           Text="A powerful API testing application for developers" 
+                           FontSize="18"
+                           HorizontalOptions="Center" />
+                    
+                    <BoxView Grid.Row="2" 
+                             HeightRequest="1" 
+                             BackgroundColor="{StaticResource Border}" 
+                             HorizontalOptions="Fill" 
+                             Margin="0,10" />
+                    
+                    <HorizontalStackLayout Grid.Row="3" 
+                                         HorizontalOptions="Center" 
+                                         Spacing="10">
+                        <Button Text="Start Testing" 
+                                Style="{StaticResource PrimaryButton}"
+                                Clicked="OnStartTestingClicked" />
+                        <Button Text="View Collections" 
+                                Clicked="OnViewCollectionsClicked" />
+                    </HorizontalStackLayout>
+                </Grid>
+            </Border>
+            
+            <!-- Feature Cards -->
+            <Grid Grid.Row="1" 
+                  ColumnDefinitions="*,*,*" 
+                  ColumnSpacing="15">
+                
+                <!-- API Testing Card -->
+                <Border Grid.Column="0"
+                       BackgroundColor="White"
+                       StrokeThickness="1"
+                       Stroke="{StaticResource Border}"
+                       StrokeShape="RoundRectangle 8,8,8,8"
+                       Padding="15">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="API Testing" 
+                               FontAttributes="Bold" 
+                               FontSize="18"/>
+                        <Label Text="Send requests with support for all HTTP methods, headers, query parameters, and various body formats."
+                               FontSize="14"
+                               LineBreakMode="WordWrap" />
+                        <Button Text="Try API Tester"
+                                HorizontalOptions="Start"
+                                Clicked="OnTryApiTesterClicked" />
+                    </VerticalStackLayout>
+                </Border>
+                
+                <!-- Collections Card -->
+                <Border Grid.Column="1"
+                       BackgroundColor="White"
+                       StrokeThickness="1"
+                       Stroke="{StaticResource Border}"
+                       StrokeShape="RoundRectangle 8,8,8,8"
+                       Padding="15">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="Collections" 
+                               FontAttributes="Bold" 
+                               FontSize="18"/>
+                        <Label Text="Organize your API requests into collections for easy access and reuse."
+                               FontSize="14"
+                               LineBreakMode="WordWrap" />
+                        <Button Text="Manage Collections"
+                                HorizontalOptions="Start"
+                                Clicked="OnManageCollectionsClicked" />
+                    </VerticalStackLayout>
+                </Border>
+                
+                <!-- Authentication Card -->
+                <Border Grid.Column="2"
+                       BackgroundColor="White"
+                       StrokeThickness="1"
+                       Stroke="{StaticResource Border}"
+                       StrokeShape="RoundRectangle 8,8,8,8"
+                       Padding="15">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="Authentication" 
+                               FontAttributes="Bold" 
+                               FontSize="18"/>
+                        <Label Text="Support for various authentication methods including Basic, Bearer, API Key, OAuth, and more."
+                               FontSize="14"
+                               LineBreakMode="WordWrap" />
+                        <Button Text="Explore Authentication"
+                                HorizontalOptions="Start"
+                                Clicked="OnExploreAuthenticationClicked" />
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
+            
+            <!-- Recent Collections Section -->
+            <VerticalStackLayout Grid.Row="2" Spacing="10">
+                <Label Text="Recent Collections" 
+                       FontSize="20" 
+                       FontAttributes="Bold" />
+                
+                <CollectionView x:Name="CollectionsView"
+                              SelectionMode="Single"
+                              SelectionChanged="OnCollectionSelected"
+                              EmptyView="No collections found. Start by creating a new collection.">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Padding="10" ColumnDefinitions="2*,3*,*,2*,Auto" ColumnSpacing="10">
+                                <Label Grid.Column="0" Text="{Binding Name}" />
+                                <Label Grid.Column="1" Text="{Binding Description}" LineBreakMode="TailTruncation" />
+                                <Label Grid.Column="2" Text="{Binding Requests.Count}" />
+                                <Label Grid.Column="3" Text="{Binding UpdatedAt, StringFormat='{0:g}'}" />
+                                <Button Grid.Column="4" 
+                                        Text="Open" 
+                                        FontSize="12"
+                                        Padding="8,4"
+                                        CommandParameter="{Binding Id}"
+                                        Clicked="OnOpenCollectionClicked" />
+                            </Grid>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                    <CollectionView.Header>
+                        <Grid ColumnDefinitions="2*,3*,*,2*,Auto" 
+                              BackgroundColor="{StaticResource BackgroundSecondary}"
+                              Padding="10">
+                            <Label Grid.Column="0" Text="Name" FontAttributes="Bold" />
+                            <Label Grid.Column="1" Text="Description" FontAttributes="Bold" />
+                            <Label Grid.Column="2" Text="Requests" FontAttributes="Bold" />
+                            <Label Grid.Column="3" Text="Last Updated" FontAttributes="Bold" />
+                            <Label Grid.Column="4" Text="" />
+                        </Grid>
+                    </CollectionView.Header>
+                    <CollectionView.EmptyViewTemplate>
+                        <DataTemplate>
+                            <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="10">
+                                <Label Text="No collections found. Start by creating a new collection."
+                                       HorizontalOptions="Center" />
+                                <Button Text="Create Collection" 
+                                        HorizontalOptions="Center"
+                                        Clicked="OnCreateCollectionClicked" />
+                            </VerticalStackLayout>
+                        </DataTemplate>
+                    </CollectionView.EmptyViewTemplate>
+                </CollectionView>
+            </VerticalStackLayout>
+        </Grid>
+    </ScrollView>
+</ContentPage>

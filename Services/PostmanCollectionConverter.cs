@@ -83,19 +83,21 @@ namespace Exman.Services
             {
                 if (item.IsFolder)
                 {
-                    // This is a folder, create a nested collection
-                    var folder = new Collection
+                    // This is a folder, create a folder in the collection
+                    var folder = new Collection.Folder
                     {
+                        Id = Guid.NewGuid().ToString(),
                         Name = item.Name,
                         Description = item.Description ?? string.Empty,
-                        CreatedAt = DateTime.Now,
-                        UpdatedAt = DateTime.Now
+                        ParentId = parentCollection.Id,
+                        Folders = new System.Collections.ObjectModel.ObservableCollection<Collection.Folder>(),
+                        Requests = new System.Collections.ObjectModel.ObservableCollection<ApiRequest>()
                     };
 
                     // Process nested items
                     if (item.Items != null)
                     {
-                        ProcessItems(item.Items, folder);
+                        ProcessNestedItems(item.Items, folder);
                     }
 
                     // Add this folder to parent
@@ -106,6 +108,44 @@ namespace Exman.Services
                     // This is a request, convert it
                     var request = ConvertPostmanRequest(item);
                     parentCollection.Requests.Add(request);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Process nested Postman items and add them to the folder
+        /// </summary>
+        private static void ProcessNestedItems(List<PostmanItem> items, Collection.Folder parentFolder)
+        {
+            foreach (var item in items)
+            {
+                if (item.IsFolder)
+                {
+                    // This is a nested folder
+                    var nestedFolder = new Collection.Folder
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        Name = item.Name,
+                        Description = item.Description ?? string.Empty,
+                        ParentId = parentFolder.Id,
+                        Folders = new System.Collections.ObjectModel.ObservableCollection<Collection.Folder>(),
+                        Requests = new System.Collections.ObjectModel.ObservableCollection<ApiRequest>()
+                    };
+
+                    // Process nested items recursively
+                    if (item.Items != null)
+                    {
+                        ProcessNestedItems(item.Items, nestedFolder);
+                    }
+
+                    // Add this folder to parent
+                    parentFolder.Folders.Add(nestedFolder);
+                }
+                else if (item.Request != null)
+                {
+                    // This is a request, convert it
+                    var request = ConvertPostmanRequest(item);
+                    parentFolder.Requests.Add(request);
                 }
             }
         }
@@ -308,6 +348,232 @@ namespace Exman.Services
                 return result;
             }
             return ApiHttpMethod.GET;
+        }
+
+        /// <summary>
+        /// Convert from Postman Environment JSON string to RequestEnvironment object
+        /// </summary>
+        public async Task<RequestEnvironment> ConvertFromPostmanEnvironmentAsync(string json)
+        {
+            try
+            {
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                    PropertyNameCaseInsensitive = true
+                };
+
+                var postmanEnv = JsonSerializer.Deserialize<PostmanEnvironment>(json, options);
+                
+                if (postmanEnv == null)
+                {
+                    throw new Exception("Failed to parse Postman environment");
+                }
+
+                var environment = new RequestEnvironment
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = postmanEnv.Name,
+                    Description = string.Empty, // PostmanEnvironment doesn't have a description field
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now,
+                    Variables = new ObservableCollection<Variable>()
+                };
+
+                // Convert variables
+                if (postmanEnv.Values != null)
+                {
+                    foreach (var value in postmanEnv.Values)
+                    {
+                        environment.Variables.Add(new Variable 
+                        { 
+                            Key = value.Key, 
+                            Value = value.Value,
+                            Enabled = value.Enabled,
+                            Type = "string",
+                            IsSecret = false
+                        });
+                    }
+                }
+
+                return environment;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error converting Postman environment: {ex.Message}");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Convert to Postman Environment format
+        /// </summary>
+        public async Task<string> ConvertToPostmanEnvironmentAsync(RequestEnvironment environment)
+        {
+            var postmanEnv = new PostmanEnvironment
+            {
+                Id = environment.Id,
+                Name = environment.Name,
+                Scope = "environment",
+                ExportedAt = DateTime.Now.ToString("o"),
+                ExportedUsing = "Exman",
+                Values = new List<PostmanEnvironmentVariable>()
+            };
+
+            // Convert variables
+            if (environment.Variables != null)
+            {
+                foreach (var variable in environment.Variables)
+                {
+                    postmanEnv.Values.Add(new PostmanEnvironmentVariable
+                    {
+                        Key = variable.Key,
+                        Value = variable.Value,
+                        Enabled = variable.Enabled,
+                        Type = "default"
+                    });
+                }
+            }
+
+            // Serialize to JSON
+            var options = new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            };
+
+            return JsonSerializer.Serialize(postmanEnv, options);
+        }
+
+        /// <summary>
+        /// Convert a Postman collection to Exman Collection asynchronously
+        /// </summary>
+        public async Task<Collection> ConvertFromPostmanCollectionAsync(string json)
+        {
+            try
+            {
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                    PropertyNameCaseInsensitive = true
+                };
+
+                var postmanCollection = JsonSerializer.Deserialize<PostmanCollection>(json, options);
+                
+                if (postmanCollection == null)
+                {
+                    throw new Exception("Failed to parse Postman collection");
+                }
+
+                return ConvertFromPostmanCollection(postmanCollection);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error converting Postman collection: {ex.Message}");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Convert an Exman Collection to Postman format asynchronously
+        /// </summary>
+        public async Task<string> ConvertToPostmanCollectionAsync(Collection collection)
+        {
+            var postmanCollection = new PostmanCollection
+            {
+                Info = new PostmanInfo
+                {
+                    Name = collection.Name,
+                    Description = collection.Description,
+                    Schema = "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+                },
+                Items = new List<PostmanItem>()
+            };
+
+            // Convert requests
+            foreach (var request in collection.Requests)
+            {
+                postmanCollection.Items.Add(ConvertToPostmanItem(request));
+            }
+
+            // Convert folders
+            foreach (var folder in collection.Folders)
+            {
+                var folderItem = new PostmanItem
+                {
+                    Name = folder.Name,
+                    Description = folder.Description,
+                    Items = new List<PostmanItem>()
+                };
+
+                // Add requests in this folder
+                foreach (var request in folder.Requests)
+                {
+                    folderItem.Items.Add(ConvertToPostmanItem(request));
+                }
+
+                postmanCollection.Items.Add(folderItem);
+            }
+
+            // Serialize to JSON
+            var options = new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            };
+
+            return JsonSerializer.Serialize(postmanCollection, options);
+        }
+
+        /// <summary>
+        /// Convert an Exman ApiRequest to Postman Item
+        /// </summary>
+        private PostmanItem ConvertToPostmanItem(ApiRequest request)
+        {
+            var postmanItem = new PostmanItem
+            {
+                Name = request.Name,
+                Request = new PostmanRequest
+                {
+                    Method = request.Method.ToString(),
+                    Description = request.Description,
+                    Headers = new List<PostmanHeader>(),
+                    Url = new PostmanUrl
+                    {
+                        Raw = request.Url,
+                        Query = new List<PostmanQueryParam>()
+                    }
+                }
+            };
+
+            // Add headers
+            foreach (var header in request.Headers.Where(h => h.Enabled))
+            {
+                postmanItem.Request.Headers.Add(new PostmanHeader
+                {
+                    Key = header.Key,
+                    Value = header.Value
+                });
+            }
+
+            // Add query parameters
+            foreach (var param in request.QueryParameters.Where(p => p.Enabled))
+            {
+                postmanItem.Request.Url.Query.Add(new PostmanQueryParam
+                {
+                    Key = param.Key,
+                    Value = param.Value
+                });
+            }
+
+            // Handle authentication
+            if (request.Authentication.Type != Authentication.AuthType.None)
+            {
+                // Add authentication based on type
+                // This would be implemented based on the authentication types
+            }
+
+            return postmanItem;
         }
     }
 }

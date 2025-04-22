@@ -213,9 +213,9 @@
 </style>
 
 @code {
-    private List<ApiRequest> historyRequests = new();
+    private List<RequestHistoryItem> historyRequests = new();
     private List<Collection> collections = new();
-    private ApiRequest? selectedRequest;
+    private RequestHistoryItem? selectedRequest;
     private string selectedRequestName = string.Empty;
     private string selectedCollectionId = string.Empty;
     private bool showClearConfirmation = false;
@@ -247,7 +247,7 @@
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading history: {ex.Message}");
-            historyRequests = new List<ApiRequest>();
+            historyRequests = new List<RequestHistoryItem>();
         }
     }
     
@@ -279,7 +279,7 @@
         }
     }
     
-    private async Task RemoveFromHistory(ApiRequest request)
+    private async Task RemoveFromHistory(RequestHistoryItem request)
     {
         try
         {
@@ -292,13 +292,13 @@
         }
     }
     
-    private void LoadRequest(ApiRequest request)
+    private void LoadRequest(RequestHistoryItem request)
     {
         // Navigate to API test page with the request ID
         NavigationManager.NavigateTo($"/apitest?requestId={request.Id}");
     }
     
-    private void ShowSaveToCollectionModal(ApiRequest request)
+    private void ShowSaveToCollectionModal(RequestHistoryItem request)
     {
         selectedRequest = request;
         selectedRequestName = request.Name ?? $"{request.Method} {request.Url}";

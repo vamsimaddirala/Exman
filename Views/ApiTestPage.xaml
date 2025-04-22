@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Exman.Views.ApiTestPage"
+             Title="API Test">
+    
+    <Grid ColumnDefinitions="300,*" RowDefinitions="*">
+        <!-- Left Panel - Collections Tree -->
+        <Border Grid.Column="0" 
+                Stroke="{StaticResource Border}"
+                StrokeThickness="0,0,1,0">
+            <Grid RowDefinitions="Auto,*">
+                <!-- Collection Header -->
+                <Grid Grid.Row="0" 
+                      ColumnDefinitions="*,Auto" 
+                      Padding="10"
+                      BackgroundColor="{StaticResource BackgroundSecondary}">
+                    <Label Grid.Column="0" 
+                           Text="Collections" 
+                           FontAttributes="Bold"
+                           VerticalOptions="Center" />
+                    <Button Grid.Column="1" 
+                            Text="+" 
+                            Padding="8,0"
+                            WidthRequest="30"
+                            HeightRequest="30"
+                            CornerRadius="15" 
+                            Clicked="OnAddCollectionClicked"
+                            Style="{StaticResource PrimaryButton}" />
+                </Grid>
+                
+                <!-- Collection Tree -->
+                <ScrollView Grid.Row="1">
+                    <CollectionView x:Name="CollectionTreeView" 
+                                  SelectionMode="Single"
+                                  SelectionChanged="OnRequestSelected">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Padding="5" ColumnDefinitions="Auto,*">
+                                    <!-- Indentation based on level -->
+                                    <BoxView Grid.Column="0" 
+                                             WidthRequest="{Binding Level, Converter={StaticResource LevelToIndentationConverter}}" 
+                                             BackgroundColor="Transparent" />
+                                    
+                                    <!-- Item content -->
+                                    <Grid Grid.Column="1" ColumnDefinitions="Auto,*,Auto">
+                                        <!-- Icon -->
+                                        <Image Grid.Column="0" 
+                                               Source="{Binding Type, Converter={StaticResource ItemTypeToIconConverter}}"
+                                               WidthRequest="16"
+                                               HeightRequest="16"
+                                               VerticalOptions="Center"
+                                               Margin="0,0,5,0" />
+                                        
+                                        <!-- Name -->
+                                        <Label Grid.Column="1" 
+                                               Text="{Binding Name}" 
+                                               VerticalOptions="Center" />
+                                        
+                                        <!-- HTTP Method (if applicable) -->
+                                        <Border Grid.Column="2"
+                                                Style="{StaticResource MethodBadge}"
+                                                IsVisible="{Binding IsRequest}"
+                                                BackgroundColor="{Binding Method, Converter={StaticResource MethodToColorConverter}}">
+                                            <Label Text="{Binding Method}" 
+                                                   TextColor="White"
+                                                   FontAttributes="Bold"
+                                                   FontSize="11"
+                                                   HorizontalOptions="Center" />
+                                        </Border>
+                                    </Grid>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                        <CollectionView.EmptyView>
+                            <VerticalStackLayout HorizontalOptions="Center"
+                                               VerticalOptions="Center"
+                                               Spacing="10">
+                                <Label Text="No Collections" 
+                                       HorizontalOptions="Center" />
+                                <Button Text="New Collection" 
+                                        Style="{StaticResource PrimaryButton}"
+                                        HorizontalOptions="Center"
+                                        Clicked="OnAddCollectionClicked" />
+                            </VerticalStackLayout>
+                        </CollectionView.EmptyView>
+                    </CollectionView>
+                </ScrollView>
+            </Grid>
+        </Border>
+        
+        <!-- Right Panel - API Request/Response -->
+        <Grid Grid.Column="1">
+            <Grid RowDefinitions="Auto,*">
+                <!-- Request Panel -->
+                <Border Grid.Row="0" 
+                        Padding="10" 
+                        Stroke="{StaticResource Border}"
+                        StrokeThickness="0,0,0,1">
+                    <Grid RowDefinitions="Auto,Auto,Auto">
+                        <!-- Request URL Row -->
+                        <Grid Grid.Row="0" 
+                              ColumnDefinitions="Auto,*,Auto" 
+                              ColumnSpacing="10">
+                            <!-- HTTP Method Picker -->
+                            <Border Grid.Column="0"
+                                    Padding="0"
+                                    WidthRequest="100"
+                                    BackgroundColor="{Binding SelectedMethod, Converter={StaticResource MethodToColorConverter}}">
+                                <Picker x:Name="MethodPicker"
+                                        TextColor="White"
+                                        ItemsSource="{Binding HttpMethods}"
+                                        SelectedItem="{Binding SelectedMethod}"
+                                        Title="Method"
+                                        SelectedIndexChanged="OnMethodChanged" 
+                                        Margin="5,0" />
+                            </Border>
+                            
+                            <!-- URL Entry -->
+                            <Entry Grid.Column="1"
+                                   x:Name="UrlEntry"
+                                   Text="{Binding RequestUrl}"
+                                   Placeholder="Enter request URL"
+                                   ClearButtonVisibility="WhileEditing"
+                                   TextChanged="OnUrlTextChanged" />
+                            
+                            <!-- Send Button -->
+                            <Button Grid.Column="2"
+                                    Text="Send"
+                                    Style="{StaticResource PrimaryButton}" 
+                                    Clicked="OnSendRequestClicked" />
+                        </Grid>
+                        
+                        <!-- Request Tabs -->
+                        <Grid Grid.Row="1" 
+                              ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,*" 
+                              Margin="0,10,0,0">
+                            <Button Grid.Column="0" 
+                                    Text="Params" 
+                                    Style="{Binding CurrentRequestTab, Converter={StaticResource TabToStyleConverter}, ConverterParameter='params'}" 
+                                    Clicked="OnTabClicked"
+                                    CommandParameter="params" />
+                            <Button Grid.Column="1" 
+                                    Text="Authorization" 
+                                    Style="{Binding CurrentRequestTab, Converter={StaticResource TabToStyleConverter}, ConverterParameter='auth'}" 
+                                    Clicked="OnTabClicked"
+                                    CommandParameter="auth" />
+                            <Button Grid.Column="2" 
+                                    Text="Headers" 
+                                    Style="{Binding CurrentRequestTab, Converter={StaticResource TabToStyleConverter}, ConverterParameter='headers'}" 
+                                    Clicked="OnTabClicked"
+                                    CommandParameter="headers" />
+                            <Button Grid.Column="3" 
+                                    Text="Body" 
+                                    Style="{Binding CurrentRequestTab, Converter={StaticResource TabToStyleConverter}, ConverterParameter='body'}" 
+                                    Clicked="OnTabClicked"
+                                    CommandParameter="body" />
+                            <Button Grid.Column="4" 
+                                    Text="Pre-request Script" 
+                                    Style="{Binding CurrentRequestTab, Converter={StaticResource TabToStyleConverter}, ConverterParameter='script'}" 
+                                    Clicked="OnTabClicked"
+                                    CommandParameter="script" />
+                            <BoxView Grid.Column="5" 
+                                     BackgroundColor="{StaticResource Border}" 
+                                     HeightRequest="1" 
+                                     VerticalOptions="End" />
+                        </Grid>
+                        
+                        <!-- Content for Current Tab -->
+                        <ContentView Grid.Row="2" x:Name="RequestTabContent" Padding="0,10">
+                            <ContentView.Resources>
+                                <!-- Tab Content Templates -->
+                            </ContentView.Resources>
+                        </ContentView>
+                    </Grid>
+                </Border>
+                
+                <!-- Response Panel -->
+                <Grid Grid.Row="1" RowDefinitions="Auto,*">
+                    <!-- Response Tabs -->
+                    <Grid Grid.Row="0" 
+                          ColumnDefinitions="Auto,Auto,Auto,*" 
+                          Padding="10">
+                        <Button Grid.Column="0" 
+                                Text="Response" 
+                                Style="{Binding CurrentResponseTab, Converter={StaticResource TabToStyleConverter}, ConverterParameter='response'}" 
+                                Clicked="OnResponseTabClicked"
+                                CommandParameter="response" />
+                        <Button Grid.Column="1" 
+                                Text="Headers" 
+                                Style="{Binding CurrentResponseTab, Converter={StaticResource TabToStyleConverter}, ConverterParameter='respHeaders'}" 
+                                Clicked="OnResponseTabClicked"
+                                CommandParameter="respHeaders" />
+                        <Button Grid.Column="2" 
+                                Text="Tests" 
+                                Style="{Binding CurrentResponseTab, Converter={StaticResource TabToStyleConverter}, ConverterParameter='tests'}" 
+                                Clicked="OnResponseTabClicked"
+                                CommandParameter="tests" />
+                        <BoxView Grid.Column="3" 
+                                 BackgroundColor="{StaticResource Border}" 
+                                 HeightRequest="1" 
+                                 VerticalOptions="End" />
+                    </Grid>
+                    
+                    <!-- Response Content -->
+                    <Grid Grid.Row="1" RowDefinitions="Auto,*" Padding="10,0,10,10">
+                        <!-- Status Bar -->
+                        <Grid Grid.Row="0" 
+                              ColumnDefinitions="Auto,*,Auto" 
+                              IsVisible="{Binding HasResponse}"
+                              x:Name="ResponseStatusContainer">
+                            <Label Grid.Column="0" 
+                                   x:Name="ResponseStatusCodeLabel"
+                                   Text="{Binding ResponseStatusCode}" 
+                                   TextColor="{Binding IsResponseSuccess, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#28A745,#DC3545'}"
+                                   FontAttributes="Bold"
+                                   VerticalOptions="Center" />
+                            <Label Grid.Column="1" 
+                                   x:Name="ResponseStatusTextLabel"
+                                   Text="{Binding ResponseStatusText}" 
+                                   Margin="5,0,0,0"
+                                   VerticalOptions="Center" />
+                            <Label Grid.Column="2" 
+                                   Text="{Binding ResponseTime, StringFormat='{0} ms'}" 
+                                   VerticalOptions="Center" />
+                        </Grid>
+                        
+                        <!-- Response Content View -->
+                        <ContentView Grid.Row="1" x:Name="ResponseTabContent">
+                            <!-- Response tab content will be created in code -->
+                        </ContentView>
+                    </Grid>
+                </Grid>
+                
+                <!-- Loading Overlay -->
+                <Grid x:Name="LoadingOverlay" 
+                      IsVisible="false"
+                      BackgroundColor="#80000000">
+                    <ActivityIndicator IsRunning="true" 
+                                     HorizontalOptions="Center" 
+                                     VerticalOptions="Center"
+                                     Color="{StaticResource Primary}" />
+                </Grid>
+            </Grid>
+        </Grid>
+    </Grid>
+</ContentPage>

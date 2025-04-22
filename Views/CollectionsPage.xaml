@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Exman.Views.CollectionsPage"
+             Title="Collections">
+
+    <Grid RowDefinitions="Auto,*" Padding="20">
+        <!-- Header -->
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,20">
+            <Label Grid.Column="0" 
+                   Text="API Collections" 
+                   FontSize="24" 
+                   FontAttributes="Bold" 
+                   VerticalOptions="Center" />
+            
+            <Button Grid.Column="1" 
+                    Text="New Collection" 
+                    Style="{StaticResource PrimaryButton}"
+                    Clicked="OnNewCollectionClicked" />
+        </Grid>
+        
+        <!-- Collections List -->
+        <Grid Grid.Row="1" RowDefinitions="*,Auto">
+            <!-- Collections Table -->
+            <CollectionView Grid.Row="0" 
+                          x:Name="CollectionsListView"
+                          SelectionMode="Single"
+                          SelectionChanged="OnCollectionSelected"
+                          EmptyView="No collections found. Create a new collection to get started.">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Padding="10" 
+                              ColumnDefinitions="*,2*,*,*,Auto,Auto"
+                              ColumnSpacing="10">
+                            <Label Grid.Column="0" 
+                                   Text="{Binding Name}" 
+                                   VerticalOptions="Center" />
+                            <Label Grid.Column="1" 
+                                   Text="{Binding Description}" 
+                                   LineBreakMode="TailTruncation"
+                                   VerticalOptions="Center" />
+                            <Label Grid.Column="2" 
+                                   Text="{Binding Requests.Count, StringFormat='{0} requests'}" 
+                                   VerticalOptions="Center" />
+                            <Label Grid.Column="3" 
+                                   Text="{Binding UpdatedAt, StringFormat='{0:g}'}" 
+                                   VerticalOptions="Center" />
+                            <Button Grid.Column="4" 
+                                    Text="Edit" 
+                                    FontSize="12"
+                                    Padding="10,5"
+                                    CommandParameter="{Binding Id}"
+                                    Clicked="OnEditCollectionClicked"
+                                    Margin="0,0,5,0" />
+                            <Button Grid.Column="5" 
+                                    Text="Delete" 
+                                    BackgroundColor="#d9534f"
+                                    TextColor="White"
+                                    FontSize="12"
+                                    Padding="10,5"
+                                    CommandParameter="{Binding Id}"
+                                    Clicked="OnDeleteCollectionClicked" />
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+                <CollectionView.Header>
+                    <Grid BackgroundColor="{StaticResource BackgroundSecondary}"
+                          ColumnDefinitions="*,2*,*,*,Auto,Auto"
+                          Padding="10">
+                        <Label Grid.Column="0" Text="Name" FontAttributes="Bold" />
+                        <Label Grid.Column="1" Text="Description" FontAttributes="Bold" />
+                        <Label Grid.Column="2" Text="Requests" FontAttributes="Bold" />
+                        <Label Grid.Column="3" Text="Last Updated" FontAttributes="Bold" />
+                        <Label Grid.Column="4" Text="" />
+                        <Label Grid.Column="5" Text="" />
+                    </Grid>
+                </CollectionView.Header>
+                <CollectionView.EmptyViewTemplate>
+                    <DataTemplate>
+                        <VerticalStackLayout VerticalOptions="Center" 
+                                           HorizontalOptions="Center"
+                                           Spacing="20">
+                            <Label Text="No collections found" 
+                                   FontSize="18"
+                                   HorizontalOptions="Center" />
+                            <Label Text="Create a new collection to get started with API testing"
+                                   HorizontalOptions="Center" />
+                            <Button Text="Create Collection"
+                                    Style="{StaticResource PrimaryButton}"
+                                    HorizontalOptions="Center"
+                                    Clicked="OnNewCollectionClicked" />
+                        </VerticalStackLayout>
+                    </DataTemplate>
+                </CollectionView.EmptyViewTemplate>
+            </CollectionView>
+            
+            <VerticalStackLayout Grid.Row="1" 
+                               Spacing="10"
+                               Margin="0,20,0,0">
+                <Label Text="Import/Export" 
+                       FontAttributes="Bold"
+                       FontSize="16" />
+                <HorizontalStackLayout Spacing="10">
+                    <Button Text="Import Postman Collection" 
+                            Clicked="OnImportPostmanCollectionClicked" />
+                    <Button Text="Export Collection" 
+                            Clicked="OnExportCollectionClicked" />
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+        </Grid>
+        
+        <!-- Collection Edit Popup -->
+        <Border x:Name="EditCollectionPopup"
+                IsVisible="False"
+                BackgroundColor="White"
+                StrokeThickness="1"
+                Stroke="{StaticResource Border}"
+                StrokeShape="RoundRectangle 8,8,8,8"
+                WidthRequest="500"
+                HeightRequest="300"
+                VerticalOptions="Center"
+                HorizontalOptions="Center"
+                ZIndex="1000">
+            <Grid RowDefinitions="Auto,*,Auto" Padding="20">
+                <Label Grid.Row="0" 
+                       x:Name="PopupTitleLabel"
+                       Text="Edit Collection" 
+                       FontSize="20" 
+                       FontAttributes="Bold" 
+                       Margin="0,0,0,15" />
+                
+                <VerticalStackLayout Grid.Row="1" Spacing="15">
+                    <VerticalStackLayout Spacing="5">
+                        <Label Text="Name" />
+                        <Entry x:Name="CollectionNameEntry" 
+                               Placeholder="Collection name" />
+                    </VerticalStackLayout>
+                    
+                    <VerticalStackLayout Spacing="5">
+                        <Label Text="Description" />
+                        <Editor x:Name="CollectionDescriptionEditor" 
+                                Placeholder="Collection description"
+                                HeightRequest="100"
+                                AutoSize="TextChanges" />
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+                
+                <HorizontalStackLayout Grid.Row="2"
+                                     HorizontalOptions="End"
+                                     Spacing="10">
+                    <Button Text="Cancel" 
+                            Clicked="OnCancelEditClicked" />
+                    <Button x:Name="SaveButton"
+                            Text="Save" 
+                            Style="{StaticResource PrimaryButton}"
+                            Clicked="OnSaveCollectionClicked" />
+                </HorizontalStackLayout>
+            </Grid>
+        </Border>
+        
+        <!-- Popup Background Overlay -->
+        <BoxView x:Name="PopupOverlay"
+                 IsVisible="{Binding Source={x:Reference EditCollectionPopup}, Path=IsVisible}"
+                 BackgroundColor="#80000000"
+                 ZIndex="999"/>
+    </Grid>
+</ContentPage>

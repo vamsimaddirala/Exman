@@ -34,7 +34,7 @@
                         {
                             @foreach (var folder in collection.Folders)
                             {
-                                <RenderCollectionFolder Collection="folder" OnSelectRequest="OnSelectRequest" OnAddRequest="OnAddRequest" Indentation="1" />
+                                <RenderCollectionFolder IsFolder="true" Folder="folder" OnSelectRequest="OnSelectRequest" OnAddRequest="OnAddRequest" Indentation="1" />
                             }
                         }
                         

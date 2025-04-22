@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Exman.Views.RequestHistoryPage"
+             xmlns:converters="clr-namespace:Exman.Converters"
+             Title="Request History">
+    
+    <ContentPage.Resources>
+        <converters:MethodToColorConverter x:Key="MethodToColorConverter" />
+        <converters:BoolToColorConverter x:Key="BoolToColorConverter" />
+    </ContentPage.Resources>
+    
+    <Grid RowDefinitions="Auto,*" Padding="20">
+        <!-- Header -->
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,20">
+            <Label Grid.Column="0" 
+                   Text="Request History" 
+                   FontSize="24" 
+                   FontAttributes="Bold" 
+                   VerticalOptions="Center" />
+            
+            <Button Grid.Column="1" 
+                    Text="Clear History" 
+                    BackgroundColor="#d9534f"
+                    TextColor="White"
+                    Clicked="OnClearHistoryClicked" />
+        </Grid>
+        
+        <!-- History List -->
+        <Grid Grid.Row="1">
+            <CollectionView x:Name="HistoryListView"
+                          SelectionMode="Single"
+                          SelectionChanged="OnHistoryItemSelected"
+                          EmptyView="No request history found. Send some requests to see them here.">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Padding="10" 
+                              ColumnDefinitions="Auto,*,Auto,Auto,Auto"
+                              ColumnSpacing="15">
+                            <!-- Method -->
+                            <Border Grid.Column="0"
+                                    Style="{StaticResource MethodBadge}"
+                                    BackgroundColor="{Binding Request.Method, Converter={StaticResource MethodToColorConverter}}">
+                                <Label Text="{Binding Request.Method}" 
+                                       TextColor="White"
+                                       FontAttributes="Bold"
+                                       FontSize="12"
+                                       HorizontalOptions="Center"
+                                       Padding="5,2" />
+                            </Border>
+                            
+                            <!-- URL -->
+                            <Label Grid.Column="1" 
+                                   Text="{Binding Request.Url}" 
+                                   LineBreakMode="TailTruncation"
+                                   VerticalOptions="Center" />
+                            
+                            <!-- Status -->
+                            <Label Grid.Column="2" 
+                                   Text="{Binding Response.StatusCode}" 
+                                   TextColor="{Binding IsSuccess, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#28A745,#DC3545'}"
+                                   FontAttributes="Bold"
+                                   VerticalOptions="Center" />
+                            
+                            <!-- Time -->
+                            <Label Grid.Column="3" 
+                                   Text="{Binding Timestamp, StringFormat='{0:g}'}" 
+                                   VerticalOptions="Center" />
+                            
+                            <!-- Actions -->
+                            <Button Grid.Column="4" 
+                                    Text="Use" 
+                                    FontSize="12"
+                                    Padding="10,5"
+                                    CommandParameter="{Binding Id}"
+                                    Clicked="OnUseRequestClicked" />
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+                <CollectionView.Header>
+                    <Grid BackgroundColor="{StaticResource BackgroundSecondary}"
+                          ColumnDefinitions="Auto,*,Auto,Auto,Auto"
+                          ColumnSpacing="15"
+                          Padding="10">
+                        <Label Grid.Column="0" Text="Method" FontAttributes="Bold" />
+                        <Label Grid.Column="1" Text="URL" FontAttributes="Bold" />
+                        <Label Grid.Column="2" Text="Status" FontAttributes="Bold" />
+                        <Label Grid.Column="3" Text="Time" FontAttributes="Bold" />
+                        <Label Grid.Column="4" Text="" />
+                    </Grid>
+                </CollectionView.Header>
+                <CollectionView.EmptyViewTemplate>
+                    <DataTemplate>
+                        <VerticalStackLayout VerticalOptions="Center" 
+                                           HorizontalOptions="Center"
+                                           Spacing="20">
+                            <Label Text="No request history found" 
+                                   FontSize="18"
+                                   HorizontalOptions="Center" />
+                            <Label Text="Send API requests to see them in your history"
+                                   HorizontalOptions="Center" />
+                        </VerticalStackLayout>
+                    </DataTemplate>
+                </CollectionView.EmptyViewTemplate>
+            </CollectionView>
+        </Grid>
+    </Grid>
+</ContentPage>

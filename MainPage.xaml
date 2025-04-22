@@ -4,10 +4,10 @@
              xmlns:local="clr-namespace:Exman"
              x:Class="Exman.MainPage">
 
-    <BlazorWebView x:Name="blazorWebView" HostPage="wwwroot/index.html">
-        <BlazorWebView.RootComponents>
-            <RootComponent Selector="#app" ComponentType="{x:Type local:Components.Routes}" />
-        </BlazorWebView.RootComponents>
-    </BlazorWebView>
+    <Grid>
+        <ActivityIndicator IsRunning="True"
+                          HorizontalOptions="Center"
+                          VerticalOptions="Center"/>
+    </Grid>
 
 </ContentPage>

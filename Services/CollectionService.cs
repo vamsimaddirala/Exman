@@ -380,6 +380,32 @@ namespace Exman.Services
             }
         }
         
+        /// <summary>
+        /// Adds a new collection to the store
+        /// </summary>
+        public async Task<bool> AddCollectionAsync(Collection collection)
+        {
+            // Ensure the collection has a valid ID
+            if (string.IsNullOrEmpty(collection.Id))
+            {
+                collection.Id = Guid.NewGuid().ToString();
+            }
+            
+            collection.CreatedAt = DateTime.Now;
+            collection.UpdatedAt = DateTime.Now;
+            
+            try
+            {
+                await SaveCollectionToFileAsync(collection);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error adding collection: {ex.Message}");
+                return false;
+            }
+        }
+        
         private string GetCollectionFilePath(string id)
         {
             return Path.Combine(_collectionDirectory, $"{id}.json");

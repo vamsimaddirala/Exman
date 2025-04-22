@@ -33,6 +33,11 @@ namespace Exman.Services
         Task<bool> DeleteCollectionAsync(string id);
         
         /// <summary>
+        /// Adds a new collection
+        /// </summary>
+        Task<bool> AddCollectionAsync(Collection collection);
+        
+        /// <summary>
         /// Saves an API request to a collection
         /// </summary>
         Task<bool> SaveRequestAsync(string collectionId, ApiRequest request);

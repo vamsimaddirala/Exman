@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Exman.Views.EnvironmentsPage"
+             Title="Environments">
+    
+    <Grid RowDefinitions="Auto,*" Padding="20">
+        <!-- Header -->
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,20">
+            <Label Grid.Column="0" 
+                   Text="API Environments" 
+                   FontSize="24" 
+                   FontAttributes="Bold" 
+                   VerticalOptions="Center" />
+            
+            <Button Grid.Column="1" 
+                    Text="New Environment" 
+                    Style="{StaticResource PrimaryButton}"
+                    Clicked="OnNewEnvironmentClicked" />
+        </Grid>
+        
+        <!-- Environments List -->
+        <Grid Grid.Row="1" RowDefinitions="*,Auto">
+            <CollectionView Grid.Row="0" 
+                          x:Name="EnvironmentsListView"
+                          SelectionMode="Single"
+                          SelectionChanged="OnEnvironmentSelected"
+                          EmptyView="No environments found. Create a new environment to get started.">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Padding="10" 
+                              ColumnDefinitions="*,2*,Auto,Auto"
+                              ColumnSpacing="10">
+                            <Label Grid.Column="0" 
+                                   Text="{Binding Name}" 
+                                   VerticalOptions="Center" />
+                            <Label Grid.Column="1" 
+                                   Text="{Binding Description}" 
+                                   LineBreakMode="TailTruncation"
+                                   VerticalOptions="Center" />
+                            <Button Grid.Column="2" 
+                                    Text="Edit" 
+                                    FontSize="12"
+                                    Padding="10,5"
+                                    CommandParameter="{Binding Id}"
+                                    Clicked="OnEditEnvironmentClicked"
+                                    Margin="0,0,5,0" />
+                            <Button Grid.Column="3" 
+                                    Text="Delete" 
+                                    BackgroundColor="#d9534f"
+                                    TextColor="White"
+                                    FontSize="12"
+                                    Padding="10,5"
+                                    CommandParameter="{Binding Id}"
+                                    Clicked="OnDeleteEnvironmentClicked" />
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+                <CollectionView.Header>
+                    <Grid BackgroundColor="{StaticResource BackgroundSecondary}"
+                          ColumnDefinitions="*,2*,Auto,Auto"
+                          Padding="10">
+                        <Label Grid.Column="0" Text="Name" FontAttributes="Bold" />
+                        <Label Grid.Column="1" Text="Description" FontAttributes="Bold" />
+                        <Label Grid.Column="2" Text="" />
+                        <Label Grid.Column="3" Text="" />
+                    </Grid>
+                </CollectionView.Header>
+                <CollectionView.EmptyViewTemplate>
+                    <DataTemplate>
+                        <VerticalStackLayout VerticalOptions="Center" 
+                                           HorizontalOptions="Center"
+                                           Spacing="20">
+                            <Label Text="No environments found" 
+                                   FontSize="18"
+                                   HorizontalOptions="Center" />
+                            <Label Text="Create a new environment to manage variables across requests"
+                                   HorizontalOptions="Center" />
+                            <Button Text="Create Environment"
+                                    Style="{StaticResource PrimaryButton}"
+                                    HorizontalOptions="Center"
+                                    Clicked="OnNewEnvironmentClicked" />
+                        </VerticalStackLayout>
+                    </DataTemplate>
+                </CollectionView.EmptyViewTemplate>
+            </CollectionView>
+            
+            <VerticalStackLayout Grid.Row="1" 
+                               Spacing="10"
+                               Margin="0,20,0,0">
+                <Label Text="Import/Export" 
+                       FontAttributes="Bold"
+                       FontSize="16" />
+                <HorizontalStackLayout Spacing="10">
+                    <Button Text="Import Postman Environment" 
+                            Clicked="OnImportPostmanEnvironmentClicked" />
+                    <Button Text="Export Environment" 
+                            Clicked="OnExportEnvironmentClicked" />
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+        </Grid>
+        
+        <!-- Environment Edit Popup -->
+        <Border x:Name="EditEnvironmentPopup"
+                IsVisible="False"
+                BackgroundColor="White"
+                StrokeThickness="1"
+                Stroke="{StaticResource Border}"
+                StrokeShape="RoundRectangle 8,8,8,8"
+                WidthRequest="700"
+                HeightRequest="500"
+                VerticalOptions="Center"
+                HorizontalOptions="Center"
+                ZIndex="1000">
+            <Grid RowDefinitions="Auto,Auto,*,Auto" Padding="20">
+                <Label Grid.Row="0" 
+                       x:Name="PopupTitleLabel"
+                       Text="Edit Environment" 
+                       FontSize="20" 
+                       FontAttributes="Bold" 
+                       Margin="0,0,0,15" />
+                
+                <VerticalStackLayout Grid.Row="1" Spacing="15">
+                    <VerticalStackLayout Spacing="5">
+                        <Label Text="Name" />
+                        <Entry x:Name="EnvironmentNameEntry" 
+                               Placeholder="Environment name" />
+                    </VerticalStackLayout>
+                    
+                    <VerticalStackLayout Spacing="5">
+                        <Label Text="Description" />
+                        <Entry x:Name="EnvironmentDescriptionEntry" 
+                               Placeholder="Environment description" />
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+                
+                <Grid Grid.Row="2" RowDefinitions="Auto,*" Margin="0,15,0,0">
+                    <Label Grid.Row="0" 
+                           Text="Variables" 
+                           FontAttributes="Bold" />
+                    
+                    <Grid Grid.Row="1" RowDefinitions="Auto,*,Auto">
+                        <!-- Headers -->
+                        <Grid Grid.Row="0" 
+                              ColumnDefinitions="*,*,Auto" 
+                              BackgroundColor="{StaticResource BackgroundSecondary}"
+                              Padding="10,5">
+                            <Label Grid.Column="0" Text="Variable" FontAttributes="Bold" />
+                            <Label Grid.Column="1" Text="Value" FontAttributes="Bold" />
+                            <Label Grid.Column="2" Text="" />
+                        </Grid>
+                        
+                        <!-- Variables List -->
+                        <CollectionView Grid.Row="1" 
+                                      x:Name="VariablesListView"
+                                      SelectionMode="None">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Padding="10,5" ColumnDefinitions="*,*,Auto">
+                                        <Entry Grid.Column="0" Text="{Binding Key}" Placeholder="Variable name" />
+                                        <Entry Grid.Column="1" Text="{Binding Value}" Placeholder="Value" />
+                                        <Button Grid.Column="2" 
+                                                Text="🗑️" 
+                                                FontSize="12"
+                                                BackgroundColor="Transparent"
+                                                BorderWidth="0"
+                                                CommandParameter="{Binding .}"
+                                                Clicked="OnDeleteVariableClicked" />
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                        
+                        <!-- Add button -->
+                        <Button Grid.Row="2" 
+                                Text="Add Variable" 
+                                HorizontalOptions="Start"
+                                Margin="0,10,0,0"
+                                Clicked="OnAddVariableClicked" />
+                    </Grid>
+                </Grid>
+                
+                <HorizontalStackLayout Grid.Row="3"
+                                     HorizontalOptions="End"
+                                     Spacing="10"
+                                     Margin="0,15,0,0">
+                    <Button Text="Cancel" 
+                            Clicked="OnCancelEditClicked" />
+                    <Button x:Name="SaveButton"
+                            Text="Save" 
+                            Style="{StaticResource PrimaryButton}"
+                            Clicked="OnSaveEnvironmentClicked" />
+                </HorizontalStackLayout>
+            </Grid>
+        </Border>
+        
+        <!-- Popup Background Overlay -->
+        <BoxView x:Name="PopupOverlay"
+                 IsVisible="{Binding Source={x:Reference EditEnvironmentPopup}, Path=IsVisible}"
+                 BackgroundColor="#80000000"
+                 ZIndex="999"/>
+    </Grid>
+</ContentPage>

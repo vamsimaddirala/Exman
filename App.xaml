@@ -5,13 +5,98 @@
              x:Class="Exman.App">
     <Application.Resources>
         <ResourceDictionary>
+            <!-- Colors -->
+            <Color x:Key="Primary">#FF6C37</Color>
+            <Color x:Key="Secondary">#505050</Color>
+            <Color x:Key="Background">#FFFFFF</Color>
+            <Color x:Key="BackgroundSecondary">#F8F8F8</Color>
+            <Color x:Key="Border">#E0E0E0</Color>
+            <Color x:Key="TextPrimary">#333333</Color>
+            <Color x:Key="TextSecondary">#505050</Color>
+            <Color x:Key="MethodGet">#0D6E6F</Color>
+            <Color x:Key="MethodGetBackground">#D4F5F5</Color>
+            <Color x:Key="MethodPost">#008000</Color>
+            <Color x:Key="MethodPostBackground">#E0F5E0</Color>
+            <Color x:Key="MethodPut">#9B4700</Color>
+            <Color x:Key="MethodPutBackground">#FFF1E5</Color>
+            <Color x:Key="MethodDelete">#CC0000</Color>
+            <Color x:Key="MethodDeleteBackground">#FFE5E5</Color>
+            <Color x:Key="MethodPatch">#9932CC</Color>
+            <Color x:Key="MethodPatchBackground">#F5E5FF</Color>
 
-        <!--
-            For information about styling .NET MAUI pages
-            please refer to the documentation:
-            https://go.microsoft.com/fwlink/?linkid=2282329
-        -->
+            <!-- Button Styles -->
+            <Style TargetType="Button">
+                <Setter Property="FontFamily" Value="OpenSansRegular"/>
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="CornerRadius" Value="4"/>
+                <Setter Property="Padding" Value="12,8"/>
+                <Setter Property="TextColor" Value="{StaticResource TextPrimary}"/>
+                <Setter Property="BackgroundColor" Value="{StaticResource BackgroundSecondary}"/>
+                <Setter Property="BorderColor" Value="{StaticResource Border}"/>
+                <Setter Property="BorderWidth" Value="1"/>
+            </Style>
 
+            <Style x:Key="PrimaryButton" TargetType="Button">
+                <Setter Property="BackgroundColor" Value="{StaticResource Primary}"/>
+                <Setter Property="TextColor" Value="White"/>
+                <Setter Property="BorderWidth" Value="0"/>
+            </Style>
+
+            <Style x:Key="DangerButton" TargetType="Button">
+                <Setter Property="BackgroundColor" Value="#D9534F"/>
+                <Setter Property="TextColor" Value="White"/>
+                <Setter Property="BorderWidth" Value="0"/>
+            </Style>
+
+            <!-- Label Styles -->
+            <Style TargetType="Label">
+                <Setter Property="FontFamily" Value="OpenSansRegular"/>
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="TextColor" Value="{StaticResource TextPrimary}"/>
+            </Style>
+
+            <!-- Entry Styles -->
+            <Style TargetType="Entry">
+                <Setter Property="FontFamily" Value="OpenSansRegular"/>
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="TextColor" Value="{StaticResource TextPrimary}"/>
+                <Setter Property="BackgroundColor" Value="White"/>
+                <Setter Property="PlaceholderColor" Value="#CCCCCC"/>
+            </Style>
+
+            <!-- Editor Styles -->
+            <Style TargetType="Editor">
+                <Setter Property="FontFamily" Value="OpenSansRegular"/>
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="TextColor" Value="{StaticResource TextPrimary}"/>
+                <Setter Property="BackgroundColor" Value="White"/>
+                <Setter Property="PlaceholderColor" Value="#CCCCCC"/>
+            </Style>
+
+            <!-- Tab Styles -->
+            <Style x:Key="TabButton" TargetType="Button">
+                <Setter Property="BackgroundColor" Value="Transparent"/>
+                <Setter Property="BorderWidth" Value="0"/>
+                <Setter Property="CornerRadius" Value="0"/>
+                <Setter Property="TextColor" Value="{StaticResource TextSecondary}"/>
+                <Setter Property="Padding" Value="16,10"/>
+                <Setter Property="FontSize" Value="13"/>
+            </Style>
+
+            <Style x:Key="ActiveTabButton" TargetType="Button" BasedOn="{StaticResource TabButton}">
+                <Setter Property="TextColor" Value="{StaticResource Primary}"/>
+            </Style>
+
+            <!-- HTTP Method Border Styles -->
+            <Style x:Key="MethodBadge" TargetType="Border">
+                <Setter Property="Padding" Value="6,2"/>
+                <Setter Property="StrokeThickness" Value="0"/>
+                <Setter Property="StrokeShape" Value="RoundRectangle 3,3,3,3"/>
+                <Setter Property="HorizontalOptions" Value="Start"/>
+                <Setter Property="VerticalOptions" Value="Center"/>
+                <Setter Property="MinimumWidthRequest" Value="40"/>
+                <Setter Property="BackgroundColor" Value="{StaticResource BackgroundSecondary}"/>
+            </Style>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

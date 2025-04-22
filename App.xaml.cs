@@ -5,19 +5,18 @@
         public App()
         {
             InitializeComponent();
+
+            MainPage = new AppShell();
         }
 
         protected override Window CreateWindow(IActivationState? activationState)
         {
-           
-            var window = new Window(new MainPage())
-            {
-                Title = "ExMan",
-                Width = 1500,
-                Height = 850,
-            };
+            var window = base.CreateWindow(activationState);
             
-
+            window.Title = "ExMan";
+            window.Width = 1500;
+            window.Height = 850;
+            
             return window;
         }
     }

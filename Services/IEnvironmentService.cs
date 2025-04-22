@@ -10,7 +10,7 @@ namespace Exman.Services
         /// <summary>
         /// Event that fires when the active environment changes or is updated
         /// </summary>
-        event Action<RequestEnvironment> EnvironmentChanged;
+        event Action<RequestEnvironment?>? EnvironmentChanged;
         
         /// <summary>
         /// Get all environments

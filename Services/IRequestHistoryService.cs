@@ -33,9 +33,9 @@ namespace Exman.Services
         Task<bool> SaveToCollectionAsync(ApiRequest request, string collectionId);
         
         /// <summary>
-        /// Get request history
+        /// Get request history items including both requests and responses
         /// </summary>
-        Task<IEnumerable<ApiRequest>> GetHistoryAsync();
+        Task<IEnumerable<RequestHistoryItem>> GetHistoryAsync();
         
         /// <summary>
         /// Remove a request from history

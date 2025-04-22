@@ -4,7 +4,7 @@
 <div class="folder-item folder-item-indented" style="padding-left: @(Indentation * 4)px">
     <div class="folder-header" @onclick="ToggleFolder">
         <span class="expand-icon">@(isExpanded ? "▼" : "▶")</span>
-        <span class="folder-name">@Collection.Name</span>
+        <span class="folder-name">@GetName()</span>
         <div class="folder-actions">
             <button class="action-btn" title="Add request" @onclick:stopPropagation="true" @onclick="AddRequest">+</button>
         </div>
@@ -13,17 +13,17 @@
     @if (isExpanded)
     {
         <div class="folder-content">
-            @if (Collection.Folders != null && Collection.Folders.Any())
+            @if (GetFolders() != null && GetFolders().Any())
             {
-                @foreach (var folder in Collection.Folders)
+                @foreach (var folder in GetFolders())
                 {
-                    <RenderCollectionFolder Collection="folder" OnSelectRequest="OnSelectRequest" OnAddRequest="OnAddRequest" Indentation="Indentation + 1" />
+                    <RenderCollectionFolder IsFolder="true" Folder="folder" OnSelectRequest="OnSelectRequest" OnAddRequest="OnAddRequest" Indentation="Indentation + 1" />
                 }
             }
             
-            @if (Collection.Requests != null && Collection.Requests.Any())
+            @if (GetRequests() != null && GetRequests().Any())
             {
-                @foreach (var request in Collection.Requests)
+                @foreach (var request in GetRequests())
                 {
                     <div class="request-item request-item-indented" style="padding-left: @(Indentation * 4 + 4)px" @onclick="() => SelectRequest(request)">
                         <div class="request-method @request.Method.ToString().ToLower()">@request.Method</div>
@@ -31,7 +31,7 @@
                     </div>
                 }
             }
-            else if (Collection.Folders == null || !Collection.Folders.Any())
+            else if (GetFolders() == null || !GetFolders().Any())
             {
                 <div class="empty-requests empty-requests-indented" style="padding-left: @(Indentation * 4 + 4)px">
                     <p>No requests in this folder.</p>
@@ -43,7 +43,13 @@
 
 @code {
     [Parameter]
-    public Collection Collection { get; set; } = new Collection();
+    public Collection? Collection { get; set; }
+    
+    [Parameter]
+    public Collection.Folder? Folder { get; set; }
+    
+    [Parameter]
+    public bool IsFolder { get; set; } = false;
     
     [Parameter]
     public EventCallback<(ApiRequest Request, string CollectionId)> OnSelectRequest { get; set; }
@@ -63,11 +69,30 @@
     
     private async Task SelectRequest(ApiRequest request)
     {
-        await OnSelectRequest.InvokeAsync((request, Collection.Id));
+        await OnSelectRequest.InvokeAsync((request, IsFolder ? Folder?.ParentId ?? string.Empty : Collection?.Id ?? string.Empty));
     }
     
     private async Task AddRequest()
     {
-        await OnAddRequest.InvokeAsync(Collection.Id);
+        await OnAddRequest.InvokeAsync(IsFolder ? Folder?.Id ?? string.Empty : Collection?.Id ?? string.Empty);
+    }
+    
+    private string GetName()
+    {
+        return IsFolder ? Folder?.Name ?? string.Empty : Collection?.Name ?? string.Empty;
+    }
+    
+    private IEnumerable<Collection.Folder> GetFolders()
+    {
+        return IsFolder 
+            ? Folder?.Folders?.ToList() ?? new List<Collection.Folder>() 
+            : Collection?.Folders?.ToList() ?? new List<Collection.Folder>();
+    }
+    
+    private IEnumerable<ApiRequest> GetRequests()
+    {
+        return IsFolder 
+        ? Folder?.Requests?.ToList()  ?? new List<ApiRequest>() 
+        : Collection?.Requests?.ToList()  ?? new List<ApiRequest>();
     }
 }
