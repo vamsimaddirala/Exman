@@ -1,0 +1,230 @@
+﻿@page "/"
+@using Exman.Services
+@inject NavigationManager NavigationManager
+@inject ICollectionService CollectionService
+
+<div class="container home-container">
+    <div class="row mb-4">
+        <div class="col">
+            <div class="hero-section">
+                <h1 class="display-4">Welcome to ExMan</h1>
+                <p class="lead">A powerful API testing application for developers</p>
+                <hr class="my-4">
+                <p>Test your APIs quickly and easily with our intuitive interface.</p>
+                <div class="hero-actions">
+                    <button class="btn btn-primary btn-lg" @onclick="GoToApiTest">Start Testing</button>
+                    <button class="btn btn-outline-secondary btn-lg" @onclick="GoToCollections">View Collections</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card feature-card">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="oi oi-cloud"></i> API Testing</h5>
+                    <p class="card-text">Send requests with support for all HTTP methods, headers, query parameters, and various body formats.</p>
+                    <button class="btn btn-outline-primary" @onclick="GoToApiTest">Try API Tester</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card feature-card">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="oi oi-folder"></i> Collections</h5>
+                    <p class="card-text">Organize your API requests into collections for easy access and reuse.</p>
+                    <button class="btn btn-outline-primary" @onclick="GoToCollections">Manage Collections</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card feature-card">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="oi oi-lock-locked"></i> Authentication</h5>
+                    <p class="card-text">Support for various authentication methods including Basic, Bearer, API Key, OAuth, and more.</p>
+                    <button class="btn btn-outline-primary" @onclick="GoToApiTest">Explore Authentication</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col">
+            <div class="recent-collections-section">
+                <h3>Recent Collections</h3>
+                @if (collections == null || collections.Count == 0)
+                {
+                    <div class="text-center py-4">
+                        <p>No collections found. Start by creating a new collection.</p>
+                        <button class="btn btn-outline-primary" @onclick="GoToCollections">Create Collection</button>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Description</th>
+                                    <th>Requests</th>
+                                    <th>Last Updated</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var collection in collections.Take(5))
+                                {
+                                    <tr>
+                                        <td>@collection.Name</td>
+                                        <td>@(collection.Description.Length > 50 ? collection.Description.Substring(0, 50) + "..." : collection.Description)</td>
+                                        <td>@collection.Requests.Count</td>
+                                        <td>@collection.UpdatedAt.ToString("g")</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary" @onclick="() => GoToCollection(collection.Id)">Open</button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .home-container {
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', sans-serif;
+        color: #333;
+    }
+
+    .hero-section {
+        text-align: center;
+        padding: 1.5rem 1rem;
+        background-color: #f8f9fa;
+        border-radius: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .hero-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 1rem;
+    }
+
+    .feature-card {
+        height: 100%;
+        transition: transform 0.2s;
+        margin-bottom: 0.75rem;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+
+    .feature-card .card-body {
+        padding: 1rem;
+    }
+
+    .feature-card .card-title {
+        font-size: 1.1rem;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+
+    .feature-card .card-text {
+        font-size: 0.9rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .recent-collections-section {
+        margin-top: 0.5rem;
+    }
+
+    .recent-collections-section h3 {
+        font-size: 1.2rem;
+        margin-bottom: 0.75rem;
+        font-weight: 600;
+    }
+
+    .table th {
+        font-weight: 500;
+        color: #666;
+        background-color: #f8f8f8;
+        font-size: 0.9rem;
+        padding: 0.5rem;
+    }
+
+    .table td {
+        padding: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .display-4 {
+        font-size: 2rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .lead {
+        font-size: 1.1rem;
+        margin-bottom: 0.75rem;
+    }
+
+    hr.my-4 {
+        margin: 0.75rem 0;
+    }
+
+    .mb-4 {
+        margin-bottom: 0.75rem;
+    }
+
+    .row {
+        margin-bottom: 0.5rem;
+    }
+    
+    
+</style>
+
+@code {
+    private List<Models.Collection> collections = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var allCollections = await CollectionService.GetCollectionsAsync();
+            collections = allCollections
+                .OrderByDescending(c => c.UpdatedAt)
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading collections: {ex.Message}");
+        }
+    }
+
+    private void GoToApiTest()
+    {
+        NavigationManager.NavigateTo("apitest");
+    }
+
+    private void GoToCollections()
+    {
+        NavigationManager.NavigateTo("apitest");
+    }
+
+    private void GoToCollection(string collectionId)
+    {
+        NavigationManager.NavigateTo($"apitest?collectionId={collectionId}");
+    }
+}

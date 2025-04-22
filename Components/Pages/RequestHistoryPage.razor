@@ -1,0 +1,371 @@
+@page "/history"
+@using Exman.Models
+@using Exman.Services
+@inject IRequestHistoryService RequestHistoryService
+@inject ICollectionService CollectionService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+<div class="postman-container">
+    <!-- Left sidebar for actions -->
+    <div class="sidebar">
+        
+        
+        <div class="collections-container">
+            @if (!historyRequests.Any())
+            {
+                <div class="empty-state">
+                    <p>No request history found.</p>
+                    <p>Make some API requests to see them here.</p>
+                </div>
+            }
+            else
+            {
+                <div class="history-actions">
+                    <button class="action-button" @onclick="() => showClearConfirmation = true">
+                        Clear History
+                    </button>
+                </div>
+                
+                <div class="history-list">
+                    @foreach (var request in historyRequests)
+                    {
+                        <div class="request-item" @onclick="() => LoadRequest(request)">
+                            <div class="request-method @request.Method.ToString().ToLower()">@request.Method.ToString()</div>
+                            <div class="request-details">
+                                <div class="request-name">@(string.IsNullOrEmpty(request.Name) ? request.Url : request.Name)</div>
+                                <div class="request-url">@request.Url</div>
+                                <div class="request-time">@FormatTimeAgo(request.LastUsed)</div>
+                            </div>
+                            <div class="history-item-actions">
+                                <button class="action-btn" @onclick="() => ShowSaveToCollectionModal(request)" title="Save to Collection">📂</button>
+                                <button class="action-btn" @onclick="() => RemoveFromHistory(request)" title="Remove">×</button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+    <!-- Sidebar resizer -->
+    <div class="sidebar-resizer" @onmousedown="OnResizerMouseDown"></div>
+    <!-- Main content area -->
+    <div class="main-content">
+        <div class="no-response">
+            <div class="center-message">
+                <i class="icon-no-response"></i>
+                <p>Select a request from history to load it</p>
+                <p>Or go to the API Test page to create a new request</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (showClearConfirmation)
+{
+    <div class="modal-backdrop" @onclick="() => showClearConfirmation = false"></div>
+    <div class="modal">
+        <div class="modal-header">
+            <h3>Clear History</h3>
+            <button class="close-button" @onclick="() => showClearConfirmation = false">×</button>
+        </div>
+        <div class="modal-body">
+            <p>Are you sure you want to clear all request history?</p>
+            <p>This action cannot be undone.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="cancel-button" @onclick="() => showClearConfirmation = false">Cancel</button>
+            <button class="save-button" style="background-color: #d9534f; color: white;" @onclick="ClearHistory">Clear History</button>
+        </div>
+    </div>
+}
+
+@if (showSaveToCollectionModal && selectedRequest != null)
+{
+    <div class="modal-backdrop" @onclick="() => showSaveToCollectionModal = false"></div>
+    <div class="modal">
+        <div class="modal-header">
+            <h3>Save to Collection</h3>
+            <button class="close-button" @onclick="() => showSaveToCollectionModal = false">×</button>
+        </div>
+        <div class="modal-body">
+            @if (!collections.Any())
+            {
+                <div class="alert-message">
+                    <p>No collections found. Create a collection first.</p>
+                </div>
+                <button class="save-button" @onclick="CreateNewCollection">Create Collection</button>
+            }
+            else
+            {
+                <div class="form-group">
+                    <label>Request Name</label>
+                    <input type="text" @bind="selectedRequestName" placeholder="Enter request name" />
+                </div>
+                <div class="form-group">
+                    <label>Collection</label>
+                    <select @bind="selectedCollectionId">
+                        <option value="">Select a collection...</option>
+                        @foreach (var collection in collections)
+                        {
+                            <option value="@collection.Id">@collection.Name</option>
+                        }
+                    </select>
+                </div>
+            }
+        </div>
+        <div class="modal-footer">
+            <button class="cancel-button" @onclick="() => showSaveToCollectionModal = false">Cancel</button>
+            <button class="save-button" @onclick="SaveToCollection" 
+                    disabled="@(string.IsNullOrEmpty(selectedCollectionId) || collections.Count == 0)">Save</button>
+        </div>
+    </div>
+}
+
+<style>
+    .history-actions {
+        padding: 12px 16px;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .action-button {
+        background-color: #f8f8f8;
+        color: #555;
+        border: 1px solid #ddd;
+        border-radius: 3px;
+        padding: 6px 12px;
+        cursor: pointer;
+        font-size: 12px;
+        width: 100%;
+    }
+    
+    .action-button:hover {
+        background-color: #eee;
+    }
+    
+    .history-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 8px 16px;
+    }
+    
+    .request-item {
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        border-radius: 4px;
+        background-color: #f9f9f9;
+        cursor: pointer;
+        border: 1px solid transparent;
+        transition: all 0.2s;
+    }
+    
+    .request-item:hover {
+        background-color: #f0f0f0;
+        border-color: #ddd;
+    }
+    
+    .request-details {
+        flex: 1;
+        margin-left: 10px;
+        overflow: hidden;
+    }
+    
+    .request-name {
+        font-weight: 500;
+        font-size: 13px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .request-url {
+        font-size: 11px;
+        color: #666;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .request-time {
+        font-size: 10px;
+        color: #999;
+        margin-top: 3px;
+    }
+    
+    .history-item-actions {
+        display: none;
+        gap: 4px;
+    }
+    
+    .request-item:hover .history-item-actions {
+        display: flex;
+    }
+    
+    .alert-message {
+        background-color: #f8f9fa;
+        border-left: 4px solid #17a2b8;
+        padding: 15px;
+        border-radius: 4px;
+        margin-bottom: 15px;
+    }
+</style>
+
+@code {
+    private List<ApiRequest> historyRequests = new();
+    private List<Collection> collections = new();
+    private ApiRequest? selectedRequest;
+    private string selectedRequestName = string.Empty;
+    private string selectedCollectionId = string.Empty;
+    private bool showClearConfirmation = false;
+    private bool showSaveToCollectionModal = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadHistory();
+        await LoadCollections();
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+           // Initialize sidebar resizer
+            await JSRuntime.InvokeVoidAsync("initializeSidebarResizer");
+            
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadHistory()
+    {
+        try 
+        {
+            var requests = await RequestHistoryService.GetHistoryAsync();
+            historyRequests = requests.ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading history: {ex.Message}");
+            historyRequests = new List<ApiRequest>();
+        }
+    }
+    
+    private async Task LoadCollections()
+    {
+        try
+        {
+            var collectionsList = await CollectionService.GetCollectionsAsync();
+            collections = collectionsList.ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading collections: {ex.Message}");
+            collections = new List<Collection>();
+        }
+    }
+    
+    private async Task ClearHistory()
+    {
+        try
+        {
+            await RequestHistoryService.ClearHistoryAsync();
+            showClearConfirmation = false;
+            await LoadHistory();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error clearing history: {ex.Message}");
+        }
+    }
+    
+    private async Task RemoveFromHistory(ApiRequest request)
+    {
+        try
+        {
+            await RequestHistoryService.RemoveFromHistoryAsync(request.Id);
+            await LoadHistory();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error removing from history: {ex.Message}");
+        }
+    }
+    
+    private void LoadRequest(ApiRequest request)
+    {
+        // Navigate to API test page with the request ID
+        NavigationManager.NavigateTo($"/apitest?requestId={request.Id}");
+    }
+    
+    private void ShowSaveToCollectionModal(ApiRequest request)
+    {
+        selectedRequest = request;
+        selectedRequestName = request.Name ?? $"{request.Method} {request.Url}";
+        showSaveToCollectionModal = true;
+    }
+    
+    private void CreateNewCollection()
+    {
+        // Navigate to API test page instead of collections page
+        NavigationManager.NavigateTo("/apitest");
+    }
+    
+    private async Task SaveToCollection()
+    {
+        if (selectedRequest == null || string.IsNullOrEmpty(selectedCollectionId))
+        {
+            return;
+        }
+        
+        try
+        {
+            // Make a copy of the request with the new name
+            var requestToSave = selectedRequest.Clone();
+            requestToSave.Name = selectedRequestName;
+            
+            await CollectionService.AddRequestToCollectionAsync(selectedCollectionId, requestToSave);
+            showSaveToCollectionModal = false;
+            
+            // Show a notification or toast that the request was saved
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error saving to collection: {ex.Message}");
+        }
+    }
+    
+    private string FormatTimeAgo(DateTime dateTime)
+    {
+        var timeSpan = DateTime.Now - dateTime;
+        
+        if (timeSpan.TotalMinutes < 1)
+        {
+            return "just now";
+        }
+        if (timeSpan.TotalHours < 1)
+        {
+            return $"{(int)timeSpan.TotalMinutes} minute{(timeSpan.TotalMinutes >= 2 ? "s" : "")} ago";
+        }
+        if (timeSpan.TotalDays < 1)
+        {
+            return $"{(int)timeSpan.TotalHours} hour{(timeSpan.TotalHours >= 2 ? "s" : "")} ago";
+        }
+        if (timeSpan.TotalDays < 7)
+        {
+            return $"{(int)timeSpan.TotalDays} day{(timeSpan.TotalDays >= 2 ? "s" : "")} ago";
+        }
+        if (timeSpan.TotalDays < 30)
+        {
+            return $"{(int)(timeSpan.TotalDays / 7)} week{((int)(timeSpan.TotalDays / 7) >= 2 ? "s" : "")} ago";
+        }
+        
+        // If it's more than a month ago, just show the date
+        return dateTime.ToString("MMM dd, yyyy");
+    }
+    private void OnResizerMouseDown(MouseEventArgs e)
+    {
+        // This method doesn't need to do anything in C# code
+        // The actual resizing logic is handled by JavaScript in sidebar-resizer.js
+    }
+}

@@ -1,0 +1,39 @@
+﻿@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Web
+
+<div class="sidebar-nav">
+    <div class="nav-header">
+        <span class="nav-title">My Workspace</span>
+    </div>
+    
+    <div class="nav-items">
+        <div class="nav-item">
+            <NavLink class="nav-link" href="/">
+                <i class="fas fa-home" aria-hidden="true"></i>
+                <div class="nav-text">Home</div>
+            </NavLink>
+        </div>
+        <div class="nav-item">
+            <NavLink class="nav-link" href="apitest">
+                <i class="fas fa-folder-open" aria-hidden="true"></i>
+                <div class="nav-text">Collections</div>
+            </NavLink>
+        </div>
+        <div class="nav-item">
+            <NavLink class="nav-link" href="environments">
+                <i class="fas fa-server" aria-hidden="true"></i>
+                <div class="nav-text">Environments</div>
+            </NavLink>
+        </div>
+        <div class="nav-item">
+            <NavLink class="nav-link" href="history">
+                <i class="fas fa-clock" aria-hidden="true"></i>
+                <div class="nav-text">History</div>
+            </NavLink>
+        </div>
+    </div>
+</div>
+
+@code {
+    // Removed navigation toggle code as it's not needed for the fixed sidebar
+}

@@ -1,0 +1,73 @@
+@using Exman.Models
+@using Microsoft.AspNetCore.Components.Web
+
+<div class="folder-item folder-item-indented" style="padding-left: @(Indentation * 4)px">
+    <div class="folder-header" @onclick="ToggleFolder">
+        <span class="expand-icon">@(isExpanded ? "▼" : "▶")</span>
+        <span class="folder-name">@Collection.Name</span>
+        <div class="folder-actions">
+            <button class="action-btn" title="Add request" @onclick:stopPropagation="true" @onclick="AddRequest">+</button>
+        </div>
+    </div>
+    
+    @if (isExpanded)
+    {
+        <div class="folder-content">
+            @if (Collection.Folders != null && Collection.Folders.Any())
+            {
+                @foreach (var folder in Collection.Folders)
+                {
+                    <RenderCollectionFolder Collection="folder" OnSelectRequest="OnSelectRequest" OnAddRequest="OnAddRequest" Indentation="Indentation + 1" />
+                }
+            }
+            
+            @if (Collection.Requests != null && Collection.Requests.Any())
+            {
+                @foreach (var request in Collection.Requests)
+                {
+                    <div class="request-item request-item-indented" style="padding-left: @(Indentation * 4 + 4)px" @onclick="() => SelectRequest(request)">
+                        <div class="request-method @request.Method.ToString().ToLower()">@request.Method</div>
+                        <div class="request-name">@(string.IsNullOrEmpty(request.Name) ? request.Url : request.Name)</div>
+                    </div>
+                }
+            }
+            else if (Collection.Folders == null || !Collection.Folders.Any())
+            {
+                <div class="empty-requests empty-requests-indented" style="padding-left: @(Indentation * 4 + 4)px">
+                    <p>No requests in this folder.</p>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public Collection Collection { get; set; } = new Collection();
+    
+    [Parameter]
+    public EventCallback<(ApiRequest Request, string CollectionId)> OnSelectRequest { get; set; }
+    
+    [Parameter]
+    public EventCallback<string> OnAddRequest { get; set; }
+    
+    [Parameter]
+    public int Indentation { get; set; } = 0;
+    
+    private bool isExpanded = false;
+    
+    private void ToggleFolder()
+    {
+        isExpanded = !isExpanded;
+    }
+    
+    private async Task SelectRequest(ApiRequest request)
+    {
+        await OnSelectRequest.InvokeAsync((request, Collection.Id));
+    }
+    
+    private async Task AddRequest()
+    {
+        await OnAddRequest.InvokeAsync(Collection.Id);
+    }
+}

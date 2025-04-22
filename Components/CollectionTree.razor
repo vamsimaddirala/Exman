@@ -1,0 +1,124 @@
+@using Exman.Models
+@using Exman.Services
+@using Microsoft.AspNetCore.Components.Web
+@inject ICollectionService CollectionService
+@inject NavigationManager NavigationManager
+
+<div class="collection-tree">
+    @if (Collections == null || !Collections.Any())
+    {
+        <div class="empty-state">
+            <p>No collections found.</p>
+            <button class="create-collection-btn" @onclick="CreateNewCollection">Create Collection</button>
+        </div>
+    }
+    else
+    {
+        @foreach (var collection in Collections)
+        {
+            <div class="collection-item">
+                <div class="collection-header" @onclick="() => ToggleCollection(collection.Id)">
+                    <span class="expand-icon">@(expandedCollections.Contains(collection.Id) ? "▼" : "▶")</span>
+                    <span class="collection-name">@collection.Name</span>
+                    <div class="collection-actions">
+                        <button class="action-btn" title="Add request" @onclick:stopPropagation="true" @onclick="() => HandleAddRequest(collection.Id)">+</button>
+                        <button class="action-btn" title="Edit" @onclick:stopPropagation="true" @onclick="() => HandleEditCollection(collection)">✏️</button>
+                        <button class="action-btn delete-btn" title="Delete" @onclick:stopPropagation="true" @onclick="() => HandleDeleteCollection(collection.Id, collection.Name)">🗑️</button>
+                    </div>
+                </div>
+                
+                @if (expandedCollections.Contains(collection.Id))
+                {
+                    <div class="collection-content">
+                        @if (collection.Folders != null && collection.Folders.Any())
+                        {
+                            @foreach (var folder in collection.Folders)
+                            {
+                                <RenderCollectionFolder Collection="folder" OnSelectRequest="OnSelectRequest" OnAddRequest="OnAddRequest" Indentation="1" />
+                            }
+                        }
+                        
+                        @if (collection.Requests != null && collection.Requests.Any())
+                        {
+                            @foreach (var request in collection.Requests)
+                            {
+                                <div class="request-item @(selectedRequestId == request.Id ? "selected" : "")" 
+                                     @onclick="() => SelectRequest(request, collection.Id)">
+                                    <div class="request-method @request.Method.ToString().ToLower()">@request.Method</div>
+                                    <div class="request-name">@(string.IsNullOrEmpty(request.Name) ? request.Url : request.Name)</div>
+                                </div>
+                            }
+                        }
+                        else if (collection.Folders == null || !collection.Folders.Any())
+                        {
+                            <div class="empty-requests">
+                                <p>No requests in this collection.</p>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    }
+</div>
+
+@code {
+    [Parameter]
+    public List<Collection> Collections { get; set; } = new List<Collection>();
+    
+    [Parameter]
+    public EventCallback<(ApiRequest Request, string CollectionId)> OnSelectRequest { get; set; }
+    
+    [Parameter]
+    public EventCallback<string> OnAddRequest { get; set; }
+    
+    [Parameter]
+    public EventCallback<Collection> OnEditCollection { get; set; }
+    
+    [Parameter]
+    public EventCallback<(string Id, string Name)> OnDeleteCollection { get; set; }
+    
+    [Parameter]
+    public EventCallback OnCreateCollection { get; set; }
+    
+    private HashSet<string> expandedCollections = new HashSet<string>();
+    private string? selectedRequestId;
+
+    private void ToggleCollection(string collectionId)
+    {
+        if (expandedCollections.Contains(collectionId))
+        {
+            expandedCollections.Remove(collectionId);
+        }
+        else
+        {
+            expandedCollections.Add(collectionId);
+        }
+    }
+
+    private async Task SelectRequest(ApiRequest request, string collectionId)
+    {
+        selectedRequestId = request.Id;
+        await OnSelectRequest.InvokeAsync((request, collectionId));
+    }
+    
+    private async Task CreateNewCollection()
+    {
+        await OnCreateCollection.InvokeAsync();
+    }
+
+    private async Task HandleAddRequest(string collectionId)
+    {
+        await OnAddRequest.InvokeAsync(collectionId);
+    }
+
+    private async Task HandleEditCollection(Collection collection)
+    {
+        await OnEditCollection.InvokeAsync(collection);
+    }
+    
+    private async Task HandleDeleteCollection(string id, string name)
+    {
+        await OnDeleteCollection.InvokeAsync((id, name));
+    }
+}

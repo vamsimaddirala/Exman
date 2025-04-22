@@ -1,0 +1,1110 @@
+@page "/apitest"
+@using System.Collections.ObjectModel
+@using Exman.Models
+@using Exman.Services
+@using System.Text.Json
+@inject IApiRequestService ApiRequestService
+@inject ICollectionService CollectionService
+@inject IEnvironmentService EnvironmentService
+@inject IRequestHistoryService RequestHistoryService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+<div class="postman-container">
+    <!-- Left sidebar for collections -->
+    <div class="sidebar">
+        <div class="collections-header">
+            <h3>Collections</h3>
+            <button class="new-button" @onclick="OpenNewCollectionModal">New</button>
+            <button class="import-button" @onclick="ShowImportDialog">Import</button>
+        </div>
+        
+        <!-- Collection browser -->
+        <div class="collections-container">
+            <CollectionTree 
+                Collections="Collections" 
+                OnSelectRequest="HandleSelectRequest"
+                OnAddRequest="HandleAddRequest"
+                OnEditCollection="HandleEditCollection"
+                OnDeleteCollection="@(tuple => OpenDeleteCollectionModal(tuple.Id, tuple.Name))"
+                OnCreateCollection="OpenNewCollectionModal" />
+        </div>
+    </div>
+    
+    <!-- Sidebar resizer -->
+    <div class="sidebar-resizer" @onmousedown="OnResizerMouseDown"></div>
+
+    <!-- Main content area -->
+    <div class="main-content">
+        <!-- Request URL bar -->
+        <div class="url-bar">
+            <div class="method-container">
+                <select class="method-select" @bind="CurrentRequest.Method">
+                    @foreach (var method in Enum.GetValues(typeof(ApiHttpMethod)))
+                    {
+                        <option value="@method">@method</option>
+                    }
+                </select>
+            </div>
+            <input type="text" placeholder="Enter request URL" @bind="CurrentRequest.Url" class="url-input" />
+            <div class="environment-container">
+                <select class="environment-select" @bind="CurrentEnvironmentId" @bind:after="EnvironmentChanged">
+                    <option value="">Local Development</option>
+                    @foreach (var env in Environments)
+                    {
+                        <option value="@env.Id">@env.Name</option>
+                    }
+                </select>
+            </div>
+            <div class="actions-container">
+                <button class="send-button" @onclick="SendRequest">Send</button>
+                <button class="save-button" @onclick="OpenSaveRequestModal">Save</button>
+            </div>
+        </div>
+
+        <!-- Request tabs -->
+        <div class="request-tabs">
+            <div class="tabs">
+                <button class='tab-button @(ActiveTab == "params" ? "active" : "")' @onclick='() => ActiveTab = "params"'>Params</button>
+                <button class='tab-button @(ActiveTab == "auth" ? "active" : "")' @onclick='() => ActiveTab = "auth"'>Authorization</button>
+                <button class='tab-button @(ActiveTab == "headers" ? "active" : "")' @onclick='() => ActiveTab = "headers"'>Headers (@(CurrentRequest.Headers.Count))</button>
+                <button class='tab-button @(ActiveTab == "body" ? "active" : "")' @onclick='() => ActiveTab = "body"'>Body</button>
+                <button class='tab-button @(ActiveTab == "settings" ? "active" : "")' @onclick='() => ActiveTab = "settings"'>Settings</button>
+            </div>
+            
+            <!-- Tab content -->
+            <div class="tab-content">
+                @if (ActiveTab == "params")
+                {
+                    <div class="params-tab">
+                        <h4>Query Params</h4>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Key</th>
+                                    <th>Value</th>
+                                    <th>Description</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var param in CurrentRequest.QueryParameters)
+                                {
+                                    <tr>
+                                        <td><input type="checkbox" checked /></td>
+                                        <td><input type="text" @bind="param.Key" /></td>
+                                        <td><input type="text" @bind="param.Value" /></td>
+                                        <td><input type="text" placeholder="Description" /></td>
+                                        <td><button class="remove-button" @onclick="() => RemoveParam(param)">×</button></td>
+                                    </tr>
+                                }
+                                <tr>
+                                    <td colspan="5">
+                                        <button class="add-button" @onclick="AddParam">Add Parameter</button>
+                                        <button class="bulk-edit-button">Bulk Edit</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else if (ActiveTab == "auth")
+                {
+                    <div class="auth-tab">
+                        <select @bind="CurrentRequest.Authentication.Type">
+                            <option value="@Authentication.AuthType.None">No Auth</option>
+                            <option value="@Authentication.AuthType.Basic">Basic Auth</option>
+                            <option value="@Authentication.AuthType.Bearer">Bearer Token</option>
+                        </select>
+                        
+                        @if (CurrentRequest.Authentication.Type == Authentication.AuthType.Basic)
+                        {
+                            <div class="auth-form">
+                                <div class="form-group">
+                                    <label>Username</label>
+                                    <input type="text" @bind="CurrentRequest.Authentication.Username" />
+                                </div>
+                                <div class="form-group">
+                                    <label>Password</label>
+                                    <input type="password" @bind="CurrentRequest.Authentication.Password" />
+                                </div>
+                            </div>
+                        }
+                        else if (CurrentRequest.Authentication.Type == Authentication.AuthType.Bearer)
+                        {
+                            <div class="auth-form">
+                                <div class="form-group">
+                                    <label>Token</label>
+                                    <input type="text" @bind="CurrentRequest.Authentication.Token" />
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else if (ActiveTab == "headers")
+                {
+                    <div class="headers-tab">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Key</th>
+                                    <th>Value</th>
+                                    <th>Description</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var header in CurrentRequest.Headers)
+                                {
+                                    <tr>
+                                        <td><input type="checkbox" checked /></td>
+                                        <td><input type="text" @bind="header.Key" /></td>
+                                        <td><input type="text" @bind="header.Value" /></td>
+                                        <td><input type="text" placeholder="Description" /></td>
+                                        <td><button class="remove-button" @onclick="() => RemoveHeader(header)">×</button></td>
+                                    </tr>
+                                }
+                                <tr>
+                                    <td colspan="5">
+                                        <button class="add-button" @onclick="AddHeader">Add Header</button>
+                                        <button class="bulk-edit-button">Bulk Edit</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else if (ActiveTab == "body")
+                {
+                    <div class="body-tab">
+                        <div class="body-type-selector">
+                            <select @bind="CurrentRequest.Body.ContentType" @bind:after="UpdateBodyType">
+                                <option value="none">None</option>
+                                <option value="application/json">JSON</option>
+                                <option value="application/x-www-form-urlencoded">Form</option>
+                                <option value="text/plain">Raw</option>
+                            </select>
+                        </div>
+                        
+                        @if (CurrentRequest.Body.ContentType == "application/x-www-form-urlencoded")
+                        {
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th>Key</th>
+                                        <th>Value</th>
+                                        <th>Description</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var field in CurrentRequest.Body.UrlEncodedData)
+                                    {
+                                        <tr>
+                                            <td><input type="checkbox" checked /></td>
+                                            <td><input type="text" @bind="field.Key" /></td>
+                                            <td><input type="text" @bind="field.Value" /></td>
+                                            <td><input type="text" placeholder="Description" /></td>
+                                            <td><button class="remove-button" @onclick="() => RemoveUrlEncodedField(field)">×</button></td>
+                                        </tr>
+                                    }
+                                    <tr>
+                                        <td colspan="5">
+                                            <button class="add-button" @onclick="AddUrlEncodedField">Add Field</button>
+                                            <button class="bulk-edit-button">Bulk Edit</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        }
+                        else if (CurrentRequest.Body.ContentType == "application/json" || CurrentRequest.Body.ContentType == "text/plain")
+                        {
+                            <div class="editor-toolbar">
+                                <button class="prettify-button" @onclick="PrettifyJson" title="Prettify JSON">{ }</button>
+                            </div>
+                            <textarea @bind="CurrentRequest.Body.RawContent" rows="10" class="body-editor"></textarea>
+                        }
+                    </div>
+                }
+                else if (ActiveTab == "settings")
+                {
+                    <div class="settings-tab">
+                        <div class="settings-group">
+                            <h4>Proxy Settings</h4>
+                            <label>
+                                <input type="checkbox" @bind="CurrentRequest.Proxy.Enabled" />
+                                Enable Proxy
+                            </label>
+                            
+                            @if (CurrentRequest.Proxy.Enabled)
+                            {
+                                <div class="proxy-settings">
+                                    <div class="form-group">
+                                        <label>Host</label>
+                                        <input type="text" @bind="CurrentRequest.Proxy.Host" />
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Port</label>
+                                        <input type="number" @bind="CurrentRequest.Proxy.Port" />
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="settings-group">
+                            <h4>Cookies</h4>
+                            <label>
+                                <input type="checkbox" />
+                                Enable cookie handling
+                            </label>
+                        </div>
+                        
+                        <div class="settings-group">
+                            <h4>Environment Variables</h4>
+                            @if (CurrentEnvironmentVariables.Any())
+                            {
+                                <table class="env-vars-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Key</th>
+                                            <th>Value</th>
+                                            <th>Type</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var variable in CurrentEnvironmentVariables)
+                                        {
+                                            <tr>
+                                                <td>@variable.Key</td>
+                                                <td>@variable.Value</td>
+                                                <td>@variable.Type</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            }
+                            else
+                            {
+                                <p>No environment variables available.</p>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Response section -->
+        <div class="response-section">
+            @if (IsLoading)
+            {
+                <div class="loading">Sending request...</div>
+            }
+            else if (CurrentResponse != null)
+            {
+                <div class="response-header">
+                    <div class="status-container">
+                        <span class="status-code @GetStatusClass((int)CurrentResponse.StatusCode)">
+                            @((int)CurrentResponse.StatusCode) @CurrentResponse.StatusDescription
+                        </span>
+                        <span class="response-time">@CurrentResponse.ResponseTime.TotalMilliseconds ms</span>
+                        <span class="response-size">@(CurrentResponse.Body?.Length ?? 0) B</span>
+                    </div>
+                </div>
+                
+                <div class="response-tabs">
+                    <button class='tab-button @(ActiveResponseTab == "body" ? "active" : "")' @onclick='() => ActiveResponseTab = "body"'>Body</button>
+                    <button class='tab-button @(ActiveResponseTab == "headers" ? "active" : "")' @onclick='() => ActiveResponseTab = "headers"'>Headers</button>
+                    <button class='tab-button @(ActiveResponseTab == "cookies" ? "active" : "")' @onclick='() => ActiveResponseTab = "cookies"'>Cookies</button>
+                    <button class='tab-button @(ActiveResponseTab == "test-results" ? "active" : "")' @onclick='() => ActiveResponseTab = "test-results"'>Test Results</button>
+                </div>
+                
+                <div class="response-content">
+                    @if (ActiveResponseTab == "body")
+                    {
+                        <div class="response-body-header">
+                            <div class="content-type">@GetContentType(CurrentResponse)</div>
+                            <div class="response-actions">
+                                <button class="prettify-button" @onclick="PrettifyResponseJson" title="Prettify JSON">{ }</button>
+                                <button class="copy-button" @onclick="CopyResponseToClipboard" title="Copy to clipboard">📋</button>
+                            </div>
+                        </div>
+                        <pre class="response-body">@FormattedResponseBody</pre>
+                    }
+                    else if (ActiveResponseTab == "headers")
+                    {
+                        <table class="response-headers">
+                            <thead>
+                                <tr>
+                                    <th>Key</th>
+                                    <th>Value</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var header in CurrentResponse.Headers)
+                                {
+                                    <tr>
+                                        <td>@header.Key</td>
+                                        <td>@header.Value</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                    else if (ActiveResponseTab == "cookies")
+                    {
+                        <div class="cookies-tab">
+                            <p>No cookies found in response</p>
+                        </div>
+                    }
+                    else if (ActiveResponseTab == "test-results")
+                    {
+                        <div class="test-results-tab">
+                            <p>No tests were run</p>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="no-response">
+                    <div class="center-message">
+                        <i class="icon-no-response"></i>
+                        <p>Send a request to see the response</p>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@if (showSaveModal)
+{
+    <div class="modal-backdrop" @onclick="CloseSaveModal"></div>
+    <div class="modal">
+        <div class="modal-header">
+            <h3>Save Request</h3>
+            <button class="close-button" @onclick="CloseSaveModal">×</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>Request Name</label>
+                <input type="text" @bind="newRequestName" placeholder="Enter a name for this request" />
+            </div>
+            <div class="form-group">
+                <label>Collection</label>
+                <select @bind="selectedCollectionId">
+                    <option value="">Select a collection</option>
+                    @foreach (var collection in Collections)
+                    {
+                        <option value="@collection.Id">@collection.Name</option>
+                    }
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="cancel-button" @onclick="CloseSaveModal">Cancel</button>
+            <button class="save-button" @onclick="SaveToCollection">Save</button>
+        </div>
+    </div>
+}
+
+@if (showCollectionModal)
+{
+    <div class="modal-backdrop" @onclick="CloseCollectionModal"></div>
+    <div class="modal">
+        <div class="modal-header">
+            <h3>@(editingCollection.Id == null ? "Create New Collection" : "Edit Collection")</h3>
+            <button class="close-button" @onclick="CloseCollectionModal">×</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>Collection Name</label>
+                <input type="text" @bind="editingCollection.Name" placeholder="Enter a name for this collection" />
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <textarea @bind="editingCollection.Description" placeholder="Enter a description (optional)" rows="3"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="cancel-button" @onclick="CloseCollectionModal">Cancel</button>
+            <button class="save-button" @onclick="SaveCollection">Save</button>
+        </div>
+    </div>
+}
+
+@if (showDeleteCollectionModal)
+{
+    <div class="modal-backdrop" @onclick="CloseDeleteCollectionModal"></div>
+    <div class="modal">
+        <div class="modal-header">
+            <h3>Delete Collection</h3>
+            <button class="close-button" @onclick="CloseDeleteCollectionModal">×</button>
+        </div>
+        <div class="modal-body">
+            <p>Are you sure you want to delete the collection "<strong>@collectionToDeleteName</strong>"?</p>
+        </div>
+        <div class="modal-footer">
+            <button class="cancel-button" @onclick="CloseDeleteCollectionModal">Cancel</button>
+            <button class="delete-button" @onclick="DeleteCollection">Delete</button>
+        </div>
+    </div>
+}
+
+@if (showImportDialog)
+{
+    <div class="modal-backdrop" @onclick="CloseImportDialog"></div>
+    <div class="modal">
+        <div class="modal-header">
+            <h3>Import Collection</h3>
+            <button class="close-button" @onclick="CloseImportDialog">×</button>
+        </div>
+        <div class="modal-body">
+            <div class="import-tabs">
+                <div class="tabs">
+                    <button class='tab-button @(importTab == "file" ? "active" : "")' @onclick='() => importTab = "file"'>From File</button>
+                    <button class='tab-button @(importTab == "raw" ? "active" : "")' @onclick='() => importTab = "raw"'>Raw JSON</button>
+                </div>
+                
+                <div class="tab-content">
+                    @if (importTab == "file")
+                    {
+                        <div class="file-import-tab">
+                            <p>Select a Postman Collection JSON file to import:</p>
+                            <InputFile OnChange="OnFileChange" class="file-input" accept=".json" />
+                            @if (!string.IsNullOrEmpty(importFileName))
+                            {
+                                <div class="file-selected">
+                                    <span>@importFileName</span>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else if (importTab == "raw")
+                    {
+                        <div class="raw-import-tab">
+                            <p>Paste your Postman Collection JSON:</p>
+                            <textarea @bind="importJsonText" rows="10" class="json-textarea" placeholder='{ "info": { "name": "Collection Name" }, "item": [] }' />
+                        </div>
+                    }
+                </div>
+                
+                @if (!string.IsNullOrEmpty(importError))
+                {
+                    <div class="import-error">
+                        <p>@importError</p>
+                    </div>
+                }
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="cancel-button" @onclick="CloseImportDialog">Cancel</button>
+            <button class="import-button" @onclick="ImportCollection" disabled="@(!CanImport())">Import</button>
+        </div>
+    </div>
+}
+@code {
+    private ApiRequest CurrentRequest { get; set; } = new ApiRequest
+    {
+        Method = ApiHttpMethod.GET,
+        Url = "",
+        QueryParameters = new ObservableCollection<Exman.Models.KeyValuePair>(),
+        Headers = new ObservableCollection<Exman.Models.KeyValuePair>(),
+        Authentication = new Authentication(),
+        Body = new RequestBody
+        {
+            ContentType = "none",
+            FormData = new ObservableCollection<Exman.Models.KeyValuePair>(),
+            UrlEncodedData = new ObservableCollection<Exman.Models.KeyValuePair>()
+        },
+        Proxy = new ProxySettings()
+    };
+    
+    private ApiResponse? CurrentResponse { get; set; }
+    private string ActiveTab { get; set; } = "params";
+    private string ActiveResponseTab { get; set; } = "body";
+    private bool IsLoading { get; set; } = false;
+    private string CurrentEnvironmentId { get; set; } = "";
+    private List<RequestEnvironment> Environments { get; set; } = new List<RequestEnvironment>();
+    private List<Variable> CurrentEnvironmentVariables { get; set; } = new List<Variable>();
+    
+    // Environment cache to store all environment variables in memory
+    private Dictionary<string, RequestEnvironment> EnvironmentCache { get; set; } = new Dictionary<string, RequestEnvironment>();
+    
+    private List<Collection> Collections { get; set; } = new List<Collection>();
+    private string FormattedResponseBody { get; set; } = "";
+    
+    // Modal properties
+    private bool showSaveModal = false;
+    private bool showCollectionModal = false;
+    private bool showDeleteCollectionModal = false;
+    private string newRequestName = "";
+    private string selectedCollectionId = "";
+    private Collection editingCollection = new Collection();
+    private string collectionToDeleteId = "";
+    private string collectionToDeleteName = "";
+    
+    // Import dialog properties
+    private bool showImportDialog = false;
+    private string importTab = "file";
+    private string? importFileName;
+    private string importJsonText = "";
+    private string importError = "";
+    private IBrowserFile? importFile;
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+           // Initialize sidebar resizer
+            await JSRuntime.InvokeVoidAsync("initializeSidebarResizer");
+            
+            StateHasChanged();
+        }
+    }
+
+    
+    protected override async Task OnInitializedAsync()
+    {
+        Environments = (await EnvironmentService.GetEnvironmentsAsync()).ToList();
+        Collections = (await CollectionService.GetCollectionsAsync()).ToList();
+        
+        if (!string.IsNullOrEmpty(CurrentEnvironmentId))
+        {
+            await LoadEnvironmentVariables();
+        }
+        
+        // Check for URL parameters
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+        
+        // Handle collectionId parameter to open specific collection
+        var collectionIdParam = System.Web.HttpUtility.ParseQueryString(uri.Query).Get("collectionId");
+        if (!string.IsNullOrEmpty(collectionIdParam))
+        {
+            // Find and select the specified collection
+            var collection = Collections.FirstOrDefault(c => c.Id == collectionIdParam);
+            if (collection != null)
+            {
+                // No need to explicitly select the collection as the CollectionTree component
+                // will handle displaying it based on its own selection logic
+            }
+        }
+        
+        // Handle requestId parameter (from history)
+        var requestIdParam = System.Web.HttpUtility.ParseQueryString(uri.Query).Get("requestId");
+        if (!string.IsNullOrEmpty(requestIdParam))
+        {
+            // Load the request from history
+            var historyRequest = await RequestHistoryService.GetRequestByIdAsync(requestIdParam);
+            if (historyRequest != null)
+            {
+                CurrentRequest = historyRequest.Clone();
+                
+                // Set the appropriate tab based on the request data
+                if (CurrentRequest.Body != null && CurrentRequest.Body.ContentType != "none")
+                {
+                    ActiveTab = "body";
+                }
+                else if (CurrentRequest.Headers.Count > 0)
+                {
+                    ActiveTab = "headers";
+                }
+                else
+                {
+                    ActiveTab = "params";
+                }
+            }
+        }
+
+        
+    }
+    
+    private async Task SendRequest()
+    {
+        try
+        {
+            IsLoading = true;
+            
+            if (!string.IsNullOrEmpty(CurrentEnvironmentId))
+            {
+                try {
+                    // Set the current environment in the EnvironmentService
+                    await EnvironmentService.SetCurrentEnvironmentAsync(CurrentEnvironmentId);
+                }
+                catch (Exception envEx)
+                {
+                    Console.WriteLine($"Environment error: {envEx.Message}");
+                    // Continue with the request even if the environment could not be set
+                }
+            }
+            
+            // Send the request using ApiRequestService
+            CurrentResponse = await ApiRequestService.SendRequestAsync(CurrentRequest);
+            
+            // Add to history
+            await RequestHistoryService.AddToHistoryAsync(CurrentRequest.Clone(), CurrentResponse);
+            
+            // Format response body for display
+            FormatResponseBody();
+        }
+        catch (HttpRequestException ex)
+        {
+            // Handle network/connection related errors
+            CurrentResponse = new ApiResponse
+            {
+                StatusDescription = "Network Error",
+                StatusCode = (System.Net.HttpStatusCode)0,
+                Body = $"Network error: {ex.Message}\n\nDetails: {ex.InnerException?.Message ?? "No additional details"}",
+                Headers = new ObservableCollection<Exman.Models.KeyValuePair>(),
+                ResponseTime = TimeSpan.Zero
+            };
+            FormattedResponseBody = CurrentResponse.Body;
+            
+            // Log the error
+            Console.WriteLine($"HTTP Request Error: {ex.Message}");
+            Console.WriteLine($"Stack Trace: {ex.StackTrace}");
+        }
+        catch (TaskCanceledException ex)
+        {
+            // Handle timeout errors
+            CurrentResponse = new ApiResponse
+            {
+                StatusDescription = "Request Timeout",
+                StatusCode = (System.Net.HttpStatusCode)408, // HTTP 408 Request Timeout
+                Body = $"The request timed out after {CurrentRequest.Timeout} ms.",
+                Headers = new ObservableCollection<Exman.Models.KeyValuePair>(),
+                ResponseTime = TimeSpan.FromMilliseconds(CurrentRequest.Timeout)
+            };
+            FormattedResponseBody = CurrentResponse.Body;
+            
+            // Log the error
+            Console.WriteLine($"Request Timeout: {ex.Message}");
+        }
+        catch (JsonException ex)
+        {
+            // Handle JSON parsing errors
+            CurrentResponse = new ApiResponse
+            {
+                StatusDescription = "JSON Parsing Error",
+                StatusCode = (System.Net.HttpStatusCode)0,
+                Body = $"Error parsing JSON: {ex.Message}\n\nLine: {ex.LineNumber}, Position: {ex.BytePositionInLine}",
+                Headers = new ObservableCollection<Exman.Models.KeyValuePair>(),
+                ResponseTime = TimeSpan.Zero
+            };
+            FormattedResponseBody = CurrentResponse.Body;
+            
+            // Log the error
+            Console.WriteLine($"JSON Parsing Error: {ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            // Handle all other unexpected errors
+            string errorDetails = ex.InnerException != null 
+                ? $"{ex.Message}\n\nInner Exception: {ex.InnerException.Message}"
+                : ex.Message;
+                
+            CurrentResponse = new ApiResponse
+            {
+                StatusDescription = "Error",
+                StatusCode = (System.Net.HttpStatusCode)0,
+                Body = $"An unexpected error occurred: {errorDetails}",
+                Headers = new ObservableCollection<Exman.Models.KeyValuePair>(),
+                ResponseTime = TimeSpan.Zero
+            };
+            FormattedResponseBody = CurrentResponse.Body;
+            
+            // Log the error with stack trace for debugging
+            Console.WriteLine($"Unexpected error in SendRequest: {ex.Message}");
+            Console.WriteLine($"Stack Trace: {ex.StackTrace}");
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+    
+    private void OpenSaveRequestModal()
+    {
+        newRequestName = CurrentRequest.Name ?? $"{CurrentRequest.Method} {CurrentRequest.Url}";
+        showSaveModal = true;
+    }
+    
+    private void CloseSaveModal() => showSaveModal = false;
+    
+    private async Task SaveToCollection()
+    {
+        if (string.IsNullOrWhiteSpace(selectedCollectionId))
+        {
+            // TODO: Show error message
+            return;
+        }
+        
+        var requestToSave = CurrentRequest.Clone();
+        requestToSave.Name = newRequestName;
+        
+        await CollectionService.SaveRequestAsync(selectedCollectionId, requestToSave);
+        
+        // Refresh collections
+        Collections = (await CollectionService.GetCollectionsAsync()).ToList();
+        
+        CloseSaveModal();
+    }
+    
+    private void OpenNewCollectionModal()
+    {
+        editingCollection = new Collection
+        {
+            Id = null,  // Explicitly set Id to null for new collections
+            Name = "",
+            Description = ""
+        };
+        showCollectionModal = true;
+    }
+    
+    private void CloseCollectionModal() => showCollectionModal = false;
+    
+    private async Task SaveCollection()
+    {
+        if (string.IsNullOrEmpty(editingCollection.Id))
+        {
+            // Create new collection
+            await CollectionService.CreateCollectionAsync(editingCollection);
+        }
+        else
+        {
+            // Update existing collection
+            await CollectionService.UpdateCollectionAsync(editingCollection);
+        }
+        
+        // Refresh collections
+        Collections = (await CollectionService.GetCollectionsAsync()).ToList();
+        
+        CloseCollectionModal();
+    }
+    
+    private void HandleEditCollection(Collection collection)
+    {
+        editingCollection = new Collection
+        {
+            Id = collection.Id,
+            Name = collection.Name,
+            Description = collection.Description
+        };
+        showCollectionModal = true;
+    }
+    
+    private void OpenDeleteCollectionModal(string id, string name)
+    {
+        collectionToDeleteId = id;
+        collectionToDeleteName = name;
+        showDeleteCollectionModal = true;
+    }
+    
+    private void CloseDeleteCollectionModal() => showDeleteCollectionModal = false;
+    
+    private async Task DeleteCollection()
+    {
+        if (!string.IsNullOrEmpty(collectionToDeleteId))
+        {
+            bool success = await CollectionService.DeleteCollectionAsync(collectionToDeleteId);
+            if (success)
+            {
+                // Refresh collections
+                Collections = (await CollectionService.GetCollectionsAsync()).ToList();
+            }
+            else
+            {
+                // Handle error - could add a toast notification here
+            }
+        }
+        
+        CloseDeleteCollectionModal();
+    }
+    
+    private async Task HandleSelectRequest((ApiRequest Request, string CollectionId) data)
+    {
+        // Load the selected request
+        CurrentRequest = data.Request.Clone();
+        
+        // Switch to the appropriate tab
+        if (CurrentRequest.Body != null && CurrentRequest.Body.ContentType != "none")
+        {
+            ActiveTab = "body";
+        }
+        else if (CurrentRequest.Headers.Count > 0)
+        {
+            ActiveTab = "headers";
+        }
+        else
+        {
+            ActiveTab = "params";
+        }
+    }
+    
+    private void HandleAddRequest(string collectionId)
+    {
+        selectedCollectionId = collectionId;
+        OpenSaveRequestModal();
+    }
+    
+    private async Task EnvironmentChanged()
+    {
+        await LoadEnvironmentVariables();
+    }
+    
+    private async Task LoadEnvironmentVariables()
+    {
+        if (string.IsNullOrEmpty(CurrentEnvironmentId))
+        {
+            CurrentEnvironmentVariables = new List<Variable>();
+            return;
+        }
+        
+        if (EnvironmentCache.TryGetValue(CurrentEnvironmentId, out var cachedEnvironment))
+        {
+            CurrentEnvironmentVariables = cachedEnvironment.Variables.ToList();
+            return;
+        }
+        
+        var environment = await EnvironmentService.GetEnvironmentAsync(CurrentEnvironmentId);
+        if (environment != null)
+        {
+            CurrentEnvironmentVariables = environment.Variables.ToList();
+            EnvironmentCache[CurrentEnvironmentId] = environment;
+        }
+        else
+        {
+            CurrentEnvironmentVariables = new List<Variable>();
+        }
+    }
+    
+    private void AddParam()
+    {
+        CurrentRequest.QueryParameters.Add(new Exman.Models.KeyValuePair());
+    }
+    
+    private void RemoveParam(Exman.Models.KeyValuePair param)
+    {
+        CurrentRequest.QueryParameters.Remove(param);
+    }
+    
+    private void AddHeader()
+    {
+        CurrentRequest.Headers.Add(new Exman.Models.KeyValuePair());
+    }
+    
+    private void RemoveHeader(Exman.Models.KeyValuePair header)
+    {
+        CurrentRequest.Headers.Remove(header);
+    }
+    
+    private void AddUrlEncodedField()
+    {
+        CurrentRequest.Body.UrlEncodedData.Add(new Exman.Models.KeyValuePair());
+    }
+    
+    private void RemoveUrlEncodedField(Exman.Models.KeyValuePair field)
+    {
+        CurrentRequest.Body.UrlEncodedData.Remove(field);
+    }
+    
+    private string GetStatusClass(int statusCode)
+    {
+        return statusCode switch
+        {
+            >= 200 and < 300 => "success",
+            >= 300 and < 400 => "redirect",
+            >= 400 and < 500 => "client-error",
+            >= 500 => "server-error",
+            _ => "unknown"
+        };
+    }
+    
+    private string GetContentType(ApiResponse response)
+    {
+        var contentTypeHeader = response.Headers.FirstOrDefault(h => h.Key.Equals("Content-Type", StringComparison.OrdinalIgnoreCase));
+        return contentTypeHeader?.Value ?? "text/plain";
+    }
+    
+    private void FormatResponseBody()
+    {
+        if (CurrentResponse == null || string.IsNullOrEmpty(CurrentResponse.Body))
+        {
+            FormattedResponseBody = "";
+            return;
+        }
+        
+        var contentType = GetContentType(CurrentResponse);
+        FormattedResponseBody = CurrentResponse.Body;
+        
+        if (contentType.Contains("application/json"))
+        {
+            PrettifyResponseJson();
+        }
+    }
+    
+    private void PrettifyJson()
+    {
+        if (string.IsNullOrWhiteSpace(CurrentRequest.Body.RawContent)) return;
+        
+        try
+        {
+            var jsonElement = JsonSerializer.Deserialize<JsonElement>(CurrentRequest.Body.RawContent);
+            CurrentRequest.Body.RawContent = JsonSerializer.Serialize(jsonElement, new JsonSerializerOptions { WriteIndented = true });
+        }
+        catch
+        {
+            // Not valid JSON, leave as is
+        }
+    }
+    
+    private void PrettifyResponseJson()
+    {
+        if (CurrentResponse == null || string.IsNullOrWhiteSpace(CurrentResponse.Body)) return;
+        
+        try
+        {
+            var jsonElement = JsonSerializer.Deserialize<JsonElement>(CurrentResponse.Body);
+            FormattedResponseBody = JsonSerializer.Serialize(jsonElement, new JsonSerializerOptions { WriteIndented = true });
+        }
+        catch
+        {
+            // Not valid JSON, leave as is
+            FormattedResponseBody = CurrentResponse.Body;
+        }
+    }
+    
+    private async Task CopyResponseToClipboard()
+    {
+        // In a real implementation, you'd use JavaScript interop to copy to clipboard
+        // For now, we'll just indicate in the UI that it was copied
+    }
+
+    private void UpdateBodyType()
+    {
+        // Clear data when content type changes
+        if (CurrentRequest.Body.ContentType == "none" || 
+            CurrentRequest.Body.ContentType == "text/plain" || 
+            CurrentRequest.Body.ContentType == "application/json")
+        {
+            CurrentRequest.Body.UrlEncodedData.Clear();
+            
+            if (CurrentRequest.Body.ContentType == "none")
+            {
+                CurrentRequest.Body.RawContent = "";
+            }
+            else if (CurrentRequest.Body.ContentType == "application/json" && string.IsNullOrEmpty(CurrentRequest.Body.RawContent))
+            {
+                // Add empty JSON object as starting point
+                CurrentRequest.Body.RawContent = "{\n  \n}";
+            }
+        }
+        else if (CurrentRequest.Body.ContentType == "application/x-www-form-urlencoded")
+        {
+            CurrentRequest.Body.RawContent = "";
+            
+            // Add an empty field if none exist
+            if (CurrentRequest.Body.UrlEncodedData.Count == 0)
+            {
+                AddUrlEncodedField();
+            }
+        }
+    }
+
+    // Import Collection Dialog Methods
+    private void ShowImportDialog()
+    {
+        showImportDialog = true;
+        importJsonText = "";
+        importFileName = null;
+        importFile = null;
+        importError = "";
+        StateHasChanged();
+    }
+    
+    private void CloseImportDialog()
+    {
+        showImportDialog = false;
+        StateHasChanged();
+    }
+    
+    private async Task OnFileChange(InputFileChangeEventArgs e)
+    {
+        importFile = e.File;
+        importFileName = e.File.Name;
+        importError = "";
+        
+        // If file is too large, show error
+        if (importFile.Size > 5 * 1024 * 1024) // 5MB limit
+        {
+            importError = "File is too large. Maximum size is 5MB.";
+            importFile = null;
+            return;
+        }
+    }
+    
+    private bool CanImport()
+    {
+        if (importTab == "file")
+        {
+            return importFile != null && string.IsNullOrEmpty(importError);
+        }
+        else
+        {
+            return !string.IsNullOrWhiteSpace(importJsonText);
+        }
+    }
+    
+    private async Task ImportCollection()
+    {
+        try
+        {
+            Collection? importedCollection = null;
+            
+            if (importTab == "file" && importFile != null)
+            {
+                // Read the file content
+                using var stream = importFile.OpenReadStream(5 * 1024 * 1024); // 5MB max
+                using var ms = new MemoryStream();
+                await stream.CopyToAsync(ms);
+                ms.Position = 0;
+                
+                using var reader = new StreamReader(ms);
+                string json = await reader.ReadToEndAsync();
+                
+                // Import the collection
+                importedCollection = await CollectionService.ImportPostmanCollectionFromJsonAsync(json);
+            }
+            else if (importTab == "raw" && !string.IsNullOrWhiteSpace(importJsonText))
+            {
+                // Import from raw JSON
+                importedCollection = await CollectionService.ImportPostmanCollectionFromJsonAsync(importJsonText);
+            }
+            
+            if (importedCollection != null)
+            {
+                // Refresh collections
+                Collections = (await CollectionService.GetCollectionsAsync()).ToList();
+                
+                CloseImportDialog();
+            }
+            else
+            {
+                importError = "Failed to import collection. Please check if the JSON is valid.";
+            }
+        }
+        catch (Exception ex)
+        {
+            importError = $"Error importing collection: {ex.Message}";
+        }
+    }
+
+    private void OnResizerMouseDown(MouseEventArgs e)
+    {
+        // This method doesn't need to do anything in C# code
+        // The actual resizing logic is handled by JavaScript in sidebar-resizer.js
+    }
+}
