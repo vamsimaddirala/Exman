@@ -9,8 +9,6 @@
 <div class="postman-container">
     <!-- Left sidebar for actions -->
     <div class="sidebar">
-        
-        
         <div class="collections-container">
             @if (!historyRequests.Any())
             {
@@ -26,7 +24,6 @@
                         Clear History
                     </button>
                 </div>
-                
                 <div class="history-list">
                     @foreach (var request in historyRequests)
                     {
@@ -55,7 +52,6 @@
             <div class="center-message">
                 <i class="icon-no-response"></i>
                 <p>Select a request from history to load it</p>
-                <p>Or go to the API Test page to create a new request</p>
             </div>
         </div>
     </div>
@@ -75,240 +71,155 @@
         </div>
         <div class="modal-footer">
             <button class="cancel-button" @onclick="() => showClearConfirmation = false">Cancel</button>
-            <button class="save-button" style="background-color: #d9534f; color: white;" @onclick="ClearHistory">Clear History</button>
+            <button class="danger-button" @onclick="ClearHistory">Clear All History</button>
         </div>
     </div>
 }
 
 @if (showSaveToCollectionModal && selectedRequest != null)
 {
-    <div class="modal-backdrop" @onclick="() => showSaveToCollectionModal = false"></div>
+    <div class="modal-backdrop" @onclick="CloseSaveToCollectionModal"></div>
     <div class="modal">
         <div class="modal-header">
             <h3>Save to Collection</h3>
-            <button class="close-button" @onclick="() => showSaveToCollectionModal = false">×</button>
+            <button class="close-button" @onclick="CloseSaveToCollectionModal">×</button>
         </div>
         <div class="modal-body">
-            @if (!collections.Any())
-            {
-                <div class="alert-message">
-                    <p>No collections found. Create a collection first.</p>
-                </div>
-                <button class="save-button" @onclick="CreateNewCollection">Create Collection</button>
-            }
-            else
-            {
-                <div class="form-group">
-                    <label>Request Name</label>
-                    <input type="text" @bind="selectedRequestName" placeholder="Enter request name" />
-                </div>
-                <div class="form-group">
-                    <label>Collection</label>
-                    <select @bind="selectedCollectionId">
-                        <option value="">Select a collection...</option>
-                        @foreach (var collection in collections)
+            <div class="form-group">
+                <label>Request Name</label>
+                <input type="text" @bind="requestName" placeholder="Enter a name for this request" />
+            </div>
+            <div class="form-group">
+                <label>Collection</label>
+                <select value="selectedCollectionId" @onchange="OnCollectionSelected">
+                    <option value="">Select a collection</option>
+                    @foreach (var collection in collections)
+                    {
+                        <option value="@collection.Id">@collection.Name</option>
+                    }
+                </select>
+            </div>
+            <div class="collection-tree-container">
+                @if (!string.IsNullOrEmpty(selectedCollectionId) && currentCollection != null)
+                {
+                    <div class="collection-path">
+                        <span>Current path: </span>
+                        <span class="path-item" @onclick="() => NavigateToRoot()">Root</span>
+                        @foreach (var (folder, index) in navigationPath.Select((folder, index) => (folder, index)))
                         {
-                            <option value="@collection.Id">@collection.Name</option>
+                            <span> > </span>
+                            <span class="path-item" @onclick="() => NavigateToPathIndex(index)">@folder.Name</span>
                         }
-                    </select>
-                </div>
-            }
+                    </div>
+                    @if (currentFolders.Any())
+                    {
+                        <div class="folder-list">
+                            @foreach (var folder in currentFolders)
+                            {
+                                <div class="folder-item" @onclick="() => NavigateToFolder(folder)">
+                                    <span class="folder-icon">📁</span>
+                                    <span class="folder-name">@folder.Name</span>
+                                </div>
+                            }
+                        </div>
+                    }
+                }
+            </div>
         </div>
         <div class="modal-footer">
-            <button class="cancel-button" @onclick="() => showSaveToCollectionModal = false">Cancel</button>
+            <button class="cancel-button" @onclick="CloseSaveToCollectionModal">Cancel</button>
             <button class="save-button" @onclick="SaveToCollection" 
                     disabled="@(string.IsNullOrEmpty(selectedCollectionId) || collections.Count == 0)">Save</button>
         </div>
     </div>
 }
 
-<style>
-    .history-actions {
-        padding: 12px 16px;
-        border-bottom: 1px solid #e0e0e0;
-    }
-    
-    .action-button {
-        background-color: #f8f8f8;
-        color: #555;
-        border: 1px solid #ddd;
-        border-radius: 3px;
-        padding: 6px 12px;
-        cursor: pointer;
-        font-size: 12px;
-        width: 100%;
-    }
-    
-    .action-button:hover {
-        background-color: #eee;
-    }
-    
-    .history-list {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        padding: 8px 16px;
-    }
-    
-    .request-item {
-        display: flex;
-        align-items: center;
-        padding: 10px;
-        border-radius: 4px;
-        background-color: #f9f9f9;
-        cursor: pointer;
-        border: 1px solid transparent;
-        transition: all 0.2s;
-    }
-    
-    .request-item:hover {
-        background-color: #f0f0f0;
-        border-color: #ddd;
-    }
-    
-    .request-details {
-        flex: 1;
-        margin-left: 10px;
-        overflow: hidden;
-    }
-    
-    .request-name {
-        font-weight: 500;
-        font-size: 13px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-    
-    .request-url {
-        font-size: 11px;
-        color: #666;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-    
-    .request-time {
-        font-size: 10px;
-        color: #999;
-        margin-top: 3px;
-    }
-    
-    .history-item-actions {
-        display: none;
-        gap: 4px;
-    }
-    
-    .request-item:hover .history-item-actions {
-        display: flex;
-    }
-    
-    .alert-message {
-        background-color: #f8f9fa;
-        border-left: 4px solid #17a2b8;
-        padding: 15px;
-        border-radius: 4px;
-        margin-bottom: 15px;
-    }
-</style>
-
 @code {
     private List<ApiRequest> historyRequests = new();
-    private List<Collection> collections = new();
-    private ApiRequest? selectedRequest;
-    private string selectedRequestName = string.Empty;
-    private string selectedCollectionId = string.Empty;
+    private List<Exman.Models.Collection> collections = new();
     private bool showClearConfirmation = false;
     private bool showSaveToCollectionModal = false;
-
+    private ApiRequest? selectedRequest;
+    private string selectedCollectionId = "";
+    private string requestName = "";
+    
+    // Save modal properties for collection tree navigation
+    private Exman.Models.Collection? currentCollection;
+    private List<Exman.Models.Collection> currentFolders = new();
+    private List<Exman.Models.Collection> navigationPath = new();
+    
     protected override async Task OnInitializedAsync()
     {
-        await LoadHistory();
-        await LoadCollections();
-    }
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-           // Initialize sidebar resizer
-            await JSRuntime.InvokeVoidAsync("initializeSidebarResizer");
-            
-            StateHasChanged();
-        }
-    }
-
-    private async Task LoadHistory()
-    {
-        try 
-        {
-            var requests = await RequestHistoryService.GetHistoryAsync();
-            historyRequests = requests.ToList();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error loading history: {ex.Message}");
-            historyRequests = new List<ApiRequest>();
-        }
+        await LoadHistoryAsync();
+        await LoadCollectionsAsync();
     }
     
-    private async Task LoadCollections()
+    private async Task LoadHistoryAsync()
     {
-        try
-        {
-            var collectionsList = await CollectionService.GetCollectionsAsync();
-            collections = collectionsList.ToList();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error loading collections: {ex.Message}");
-            collections = new List<Collection>();
-        }
+        historyRequests = (await RequestHistoryService.GetHistoryAsync()).ToList();
     }
     
-    private async Task ClearHistory()
+    private async Task LoadCollectionsAsync()
     {
-        try
-        {
-            await RequestHistoryService.ClearHistoryAsync();
-            showClearConfirmation = false;
-            await LoadHistory();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error clearing history: {ex.Message}");
-        }
+        collections = (await CollectionService.GetCollectionsAsync()).ToList();
     }
     
     private async Task RemoveFromHistory(ApiRequest request)
     {
-        try
-        {
-            await RequestHistoryService.RemoveFromHistoryAsync(request.Id);
-            await LoadHistory();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error removing from history: {ex.Message}");
-        }
+        await RequestHistoryService.RemoveFromHistoryAsync(request.Id);
+        await LoadHistoryAsync();
+    }
+    
+    private async Task ClearHistory()
+    {
+        await RequestHistoryService.ClearHistoryAsync();
+        historyRequests = new List<ApiRequest>();
+        collections = new List<Exman.Models.Collection>();
+        showClearConfirmation = false;
     }
     
     private void LoadRequest(ApiRequest request)
     {
-        // Navigate to API test page with the request ID
+        // Navigate to API test page with this request
         NavigationManager.NavigateTo($"/apitest?requestId={request.Id}");
+    }
+    
+    private string FormatTimeAgo(DateTime date)
+    {
+        var timeSpan = DateTime.Now - date;
+        
+        if (timeSpan.TotalMinutes < 1)
+            return "just now";
+        if (timeSpan.TotalHours < 1)
+            return $"{(int)timeSpan.TotalMinutes} min ago";
+        if (timeSpan.TotalDays < 1)
+            return $"{(int)timeSpan.TotalHours} hours ago";
+        if (timeSpan.TotalDays < 7)
+            return $"{(int)timeSpan.TotalDays} days ago";
+        if (timeSpan.TotalDays < 30)
+            return $"{(int)timeSpan.TotalDays / 7} weeks ago";
+        if (timeSpan.TotalDays < 365)
+            return $"{(int)timeSpan.TotalDays / 30} months ago";
+        
+        return $"{(int)timeSpan.TotalDays / 365} years ago";
     }
     
     private void ShowSaveToCollectionModal(ApiRequest request)
     {
         selectedRequest = request;
-        selectedRequestName = request.Name ?? $"{request.Method} {request.Url}";
+        requestName = !string.IsNullOrEmpty(request.Name) ? request.Name : $"{request.Method} {request.Url}";
         showSaveToCollectionModal = true;
     }
     
-    private void CreateNewCollection()
+    private void CloseSaveToCollectionModal()
     {
-        // Navigate to API test page instead of collections page
-        NavigationManager.NavigateTo("/apitest");
+        showSaveToCollectionModal = false;
+        selectedRequest = null;
+        selectedCollectionId = "";
+        requestName = "";
+        currentCollection = null;
+        currentFolders = new List<Exman.Models.Collection>();
+        navigationPath = new List<Exman.Models.Collection>();
     }
     
     private async Task SaveToCollection()
@@ -320,49 +231,61 @@
         
         try
         {
-            // Make a copy of the request with the new name
+            // Clone the request to avoid modifying the original
             var requestToSave = selectedRequest.Clone();
-            requestToSave.Name = selectedRequestName;
+            requestToSave.Name = requestName;
             
-            await CollectionService.AddRequestToCollectionAsync(selectedCollectionId, requestToSave);
-            showSaveToCollectionModal = false;
+            // Ensure the body type is properly set based on content type
+            if (requestToSave.Body != null)
+            {
+                requestToSave.Body.Type = requestToSave.Body.ContentType switch
+                {
+                    "none" => RequestBody.BodyType.None,
+                    "text/plain" or "application/json" or "application/javascript" or "application/xml" or "text/html" => RequestBody.BodyType.Raw,
+                    "multipart/form-data" => RequestBody.BodyType.FormData,
+                    "application/x-www-form-urlencoded" => RequestBody.BodyType.UrlEncoded,
+                    "application/graphql" => RequestBody.BodyType.GraphQL,
+                    "application/octet-stream" => RequestBody.BodyType.Binary,
+                    _ => RequestBody.BodyType.Raw // Default to Raw for other content types
+                };
+            }
             
-            // Show a notification or toast that the request was saved
+            await RequestHistoryService.SaveToCollectionAsync(requestToSave, selectedCollectionId);
+            CloseSaveToCollectionModal();
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error saving to collection: {ex.Message}");
+            // Could add error message display here
         }
     }
     
-    private string FormatTimeAgo(DateTime dateTime)
+    private void OnCollectionSelected(ChangeEventArgs e)
     {
-        var timeSpan = DateTime.Now - dateTime;
-        
-        if (timeSpan.TotalMinutes < 1)
-        {
-            return "just now";
-        }
-        if (timeSpan.TotalHours < 1)
-        {
-            return $"{(int)timeSpan.TotalMinutes} minute{(timeSpan.TotalMinutes >= 2 ? "s" : "")} ago";
-        }
-        if (timeSpan.TotalDays < 1)
-        {
-            return $"{(int)timeSpan.TotalHours} hour{(timeSpan.TotalHours >= 2 ? "s" : "")} ago";
-        }
-        if (timeSpan.TotalDays < 7)
-        {
-            return $"{(int)timeSpan.TotalDays} day{(timeSpan.TotalDays >= 2 ? "s" : "")} ago";
-        }
-        if (timeSpan.TotalDays < 30)
-        {
-            return $"{(int)(timeSpan.TotalDays / 7)} week{((int)(timeSpan.TotalDays / 7) >= 2 ? "s" : "")} ago";
-        }
-        
-        // If it's more than a month ago, just show the date
-        return dateTime.ToString("MMM dd, yyyy");
+        selectedCollectionId = e.Value?.ToString() ?? "";
+        currentCollection = collections.FirstOrDefault(c => c.Id == selectedCollectionId);
+        currentFolders = currentCollection?.Folders?.ToList() ?? new List<Exman.Models.Collection>();
+        navigationPath = new List<Exman.Models.Collection>();
     }
+    
+    private void NavigateToRoot()
+    {
+        navigationPath.Clear();
+        currentFolders = currentCollection?.Folders?.ToList() ?? new List<Exman.Models.Collection>();
+    }
+    
+    private void NavigateToPathIndex(int index)
+    {
+        navigationPath = navigationPath.Take(index + 1).ToList();
+        currentFolders = navigationPath.Last().Folders?.ToList() ?? new List<Exman.Models.Collection>();
+    }
+    
+    private void NavigateToFolder(Exman.Models.Collection folder)
+    {
+        navigationPath.Add(folder);
+        currentFolders = folder.Folders?.ToList() ?? new List<Exman.Models.Collection>();
+    }
+    
     private void OnResizerMouseDown(MouseEventArgs e)
     {
         // This method doesn't need to do anything in C# code

@@ -34,7 +34,7 @@
                         {
                             @foreach (var folder in collection.Folders)
                             {
-                                <RenderCollectionFolder Collection="folder" OnSelectRequest="OnSelectRequest" OnAddRequest="OnAddRequest" Indentation="1" />
+                                <RenderCollectionFolder CollectionId="@collection.Id" Collection="folder" OnSelectRequest="OnSelectRequest" OnAddRequest="OnAddRequest" OnDeleteRequest="OnDeleteRequest" Indentation="1" />
                             }
                         }
                         
@@ -46,6 +46,9 @@
                                      @onclick="() => SelectRequest(request, collection.Id)">
                                     <div class="request-method @request.Method.ToString().ToLower()">@request.Method</div>
                                     <div class="request-name">@(string.IsNullOrEmpty(request.Name) ? request.Url : request.Name)</div>
+                                    <div class="request-actions" @onclick:stopPropagation="true">
+                                        <button class="action-btn delete-btn" title="Delete" @onclick="() => HandleDeleteRequest(collection.Id, request.Id, request.Name ?? request.Url)">🗑️</button>
+                                    </div>
                                 </div>
                             }
                         }
@@ -80,6 +83,9 @@
     
     [Parameter]
     public EventCallback OnCreateCollection { get; set; }
+    
+    [Parameter]
+    public EventCallback<(string CollectionId, string RequestId, string RequestName)> OnDeleteRequest { get; set; }
     
     private HashSet<string> expandedCollections = new HashSet<string>();
     private string? selectedRequestId;
@@ -120,5 +126,10 @@
     private async Task HandleDeleteCollection(string id, string name)
     {
         await OnDeleteCollection.InvokeAsync((id, name));
+    }
+
+    private async Task HandleDeleteRequest(string collectionId, string requestId, string requestName)
+    {
+        await OnDeleteRequest.InvokeAsync((collectionId, requestId, requestName));
     }
 }

@@ -18,76 +18,14 @@
         </div>
         
         <div class="collections-container">
-            @if (Collections == null || !Collections.Any())
-            {
-                <div class="empty-state">
-                    <p>No collections found.</p>
-                    <button class="create-collection-btn" @onclick="CreateNewCollection">Create Collection</button>
-                    <button class="import-collection-btn" @onclick="ShowImportDialog">Import Collection</button>
-                </div>
-            }
-            else
-            {
-                <div class="collection-tree">
-                    @foreach (var collection in Collections)
-                    {
-                        <div class="collection-item" @key="collection.Id">
-                            <div class="collection-header @(collection.Id == selectedCollectionId ? "selected" : "")" 
-                                 @onclick="() => SelectCollection(collection.Id)">
-                                <span class="expand-icon">▶</span>
-                                <span class="collection-name">@collection.Name</span>
-                                <div class="collection-actions">
-                                    <button class="action-btn" @onclick:stopPropagation="true" @onclick="() => EditCollection(collection)">✎</button>
-                                    <button class="action-btn" @onclick:stopPropagation="true" @onclick="async () => await DeleteCollection(collection.Id)">×</button>
-                                </div>
-                            </div>
-                            
-                            @if (collection.Id == selectedCollectionId)
-                            {
-                                <div class="collection-content">
-                                    <!-- Render folders if any -->
-                                    @if (collection.Folders != null && collection.Folders.Any())
-                                    {
-                                        @foreach (var folder in collection.Folders)
-                                        {
-                                            <div class="folder-item" @key="folder.Id">
-                                                <div class="folder-header">
-                                                    <span class="expand-icon">▶</span>
-                                                    <span class="folder-name">@folder.Name</span>
-                                                </div>
-                                            </div>
-                                        }
-                                    }
-                                    
-                                    <!-- Render requests -->
-                                    @if (collection.Requests == null || !collection.Requests.Any())
-                                    {
-                                        <div class="empty-requests">
-                                            <p>No requests in this collection.</p>
-                                            <button class="add-button" @onclick="() => CreateNewRequest(collection.Id)">Add Request</button>
-                                        </div>
-                                    }
-                                    else
-                                    {
-                                        @foreach (var request in collection.Requests)
-                                        {
-                                            <div class="request-item @(request.Id == selectedRequestId ? "selected" : "")" 
-                                                 @onclick="() => SelectRequest(request.Id, collection.Id)"
-                                                 @key="request.Id">
-                                                <span class="request-method @request.Method.ToString().ToLower()">@request.Method</span>
-                                                <span class="request-name">@request.Name</span>
-                                            </div>
-                                        }
-                                        <div class="add-request-button">
-                                            <button class="add-button" @onclick="() => CreateNewRequest(collection.Id)">Add Request</button>
-                                        </div>
-                                    }
-                                </div>
-                            }
-                        </div>
-                    }
-                </div>
-            }
+            <CollectionTree 
+                Collections="@Collections"
+                OnSelectRequest="@HandleSelectRequest"
+                OnAddRequest="@((collectionId) => CreateNewRequest(collectionId))"
+                OnEditCollection="@((collection) => EditCollection(collection))"
+                OnDeleteCollection="@((data) => DeleteCollection(data.Id))"
+                OnCreateCollection="@CreateNewCollection"
+                OnDeleteRequest="@HandleDeleteRequest" />
         </div>
     </div>
     
@@ -460,6 +398,25 @@
     </div>
 }
 
+@if (showDeleteRequestModal)
+{
+    <div class="modal-backdrop" @onclick="CloseDeleteRequestModal"></div>
+    <div class="modal">
+        <div class="modal-header">
+            <h3>Delete Request</h3>
+            <button class="close-button" @onclick="CloseDeleteRequestModal">×</button>
+        </div>
+        <div class="modal-body">
+            <p>Are you sure you want to delete the request "@requestToDeleteName"?</p>
+            <p>This action cannot be undone.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="cancel-button" @onclick="CloseDeleteRequestModal">Cancel</button>
+            <button class="delete-button" @onclick="ConfirmDeleteRequest">Delete</button>
+        </div>
+    </div>
+}
+
 @code {
     private List<Collection> Collections { get; set; } = new();
     private string? selectedCollectionId;
@@ -482,6 +439,10 @@
     private string activeResponseTab = "body";
     private string FormattedResponseBody { get; set; } = "";
     
+    private bool showDeleteRequestModal = false;
+    private string? requestToDeleteName;
+    private string? requestToDeleteId;
+
     protected override async Task OnInitializedAsync()
     {
         await LoadCollectionsAsync();
@@ -864,5 +825,50 @@
     {
         // This method doesn't need to do anything in C# code
         // The actual resizing logic is handled by JavaScript in sidebar-resizer.js
+    }
+    
+    private void HandleSelectRequest((ApiRequest Request, string CollectionId) selection)
+    {
+        selectedRequestId = selection.Request.Id;
+        selectedCollectionId = selection.CollectionId;
+        selectedRequest = selection.Request;
+        CurrentResponse = null;
+    }
+    
+    private void HandleDeleteRequest((string CollectionId, string RequestId, string RequestName) data)
+    {
+        // Store the collection ID and request ID for deletion
+        selectedCollectionId = data.CollectionId;
+        requestToDeleteId = data.RequestId;
+        requestToDeleteName = data.RequestName;
+        showDeleteRequestModal = true;
+        StateHasChanged();
+    }
+
+    private void CloseDeleteRequestModal()
+    {
+        showDeleteRequestModal = false;
+        requestToDeleteName = null;
+        requestToDeleteId = null;
+        StateHasChanged();
+    }
+
+    private async Task ConfirmDeleteRequest()
+    {
+        if (!string.IsNullOrEmpty(selectedCollectionId) && !string.IsNullOrEmpty(requestToDeleteId))
+        {
+            // If the currently selected request is being deleted, clear the selection
+            if (selectedRequestId == requestToDeleteId)
+            {
+                selectedRequestId = null;
+                selectedRequest = null;
+            }
+
+            // Use our new method that supports deleting from folders
+            await CollectionService.DeleteRequestFromFolderAsync(selectedCollectionId, requestToDeleteId);
+            await LoadCollectionsAsync();
+        }
+
+        CloseDeleteRequestModal();
     }
 }

@@ -1,0 +1,15 @@
+global using Microsoft.AspNetCore.Components;
+global using Microsoft.AspNetCore.Components.Web;
+global using Microsoft.AspNetCore.Components.Forms;
+global using Microsoft.JSInterop;
+global using System;
+global using System.Collections.Generic;
+global using System.Collections.ObjectModel;
+global using System.Linq;
+global using System.Text;
+global using System.Text.Json;
+global using System.Threading.Tasks;
+global using System.IO;
+global using System.Net.Http;
+global using Exman.Models;
+global using Exman.Services;

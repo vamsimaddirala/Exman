@@ -9,7 +9,7 @@
             <button class="action-btn" title="Add request" @onclick:stopPropagation="true" @onclick="AddRequest">+</button>
         </div>
     </div>
-    
+
     @if (isExpanded)
     {
         <div class="folder-content">
@@ -17,10 +17,10 @@
             {
                 @foreach (var folder in Collection.Folders)
                 {
-                    <RenderCollectionFolder Collection="folder" OnSelectRequest="OnSelectRequest" OnAddRequest="OnAddRequest" Indentation="Indentation + 1" />
+                    <RenderCollectionFolder Collection="folder" OnSelectRequest="OnSelectRequest" OnAddRequest="OnAddRequest" OnDeleteRequest="OnDeleteRequest" Indentation="Indentation + 1" />
                 }
             }
-            
+
             @if (Collection.Requests != null && Collection.Requests.Any())
             {
                 @foreach (var request in Collection.Requests)
@@ -28,6 +28,9 @@
                     <div class="request-item request-item-indented" style="padding-left: @(Indentation * 4 + 4)px" @onclick="() => SelectRequest(request)">
                         <div class="request-method @request.Method.ToString().ToLower()">@request.Method</div>
                         <div class="request-name">@(string.IsNullOrEmpty(request.Name) ? request.Url : request.Name)</div>
+                        <div class="request-actions" @onclick:stopPropagation="true">
+                            <button class="action-btn delete-btn" title="Delete" @onclick="() => HandleDeleteRequest(request.Id, request.Name ?? request.Url)">🗑️</button>
+                        </div>
                     </div>
                 }
             }
@@ -44,12 +47,18 @@
 @code {
     [Parameter]
     public Collection Collection { get; set; } = new Collection();
-    
+
+    [Parameter]
+    public string CollectionId { get; set; } = "";
+
     [Parameter]
     public EventCallback<(ApiRequest Request, string CollectionId)> OnSelectRequest { get; set; }
     
     [Parameter]
     public EventCallback<string> OnAddRequest { get; set; }
+    
+    [Parameter]
+    public EventCallback<(string CollectionId, string RequestId, string RequestName)> OnDeleteRequest { get; set; }
     
     [Parameter]
     public int Indentation { get; set; } = 0;
@@ -69,5 +78,10 @@
     private async Task AddRequest()
     {
         await OnAddRequest.InvokeAsync(Collection.Id);
+    }
+
+    private async Task HandleDeleteRequest(string requestId, string requestName)
+    {
+        await OnDeleteRequest.InvokeAsync((Collection.Id, requestId, requestName));
     }
 }

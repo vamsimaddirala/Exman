@@ -9,6 +9,7 @@ namespace Exman.Models
     {
         public string Id { get; set; } = Guid.NewGuid().ToString();
         public string Name { get; set; } = "New Request";
+        public string CollectionId { get; set; } = string.Empty;
         public ApiHttpMethod Method { get; set; } = ApiHttpMethod.GET;
         public string Url { get; set; } = string.Empty;
         public ObservableCollection<KeyValuePair> Headers { get; set; } = new();
@@ -33,6 +34,7 @@ namespace Exman.Models
             {
                 Id = Id,
                 Name = Name,
+                CollectionId = CollectionId,
                 Method = Method,
                 Url = Url,
                 Timeout = Timeout,

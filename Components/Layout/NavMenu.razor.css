@@ -57,6 +57,9 @@
     .nav-link.active {
         color: #333;
         font-weight: 500;
+        background-color: #e6e6e6;
+        border-left: 3px solid #FF6C37;
+        position: relative;
     }
 
     .nav-link i {
@@ -66,15 +69,20 @@
     }
 
     .nav-link.active i {
-        color: #333;
+        color: #FF6C37;
     }
 
 .nav-text {
-    font-size: 0.65rem;
+    font-size: 0.7rem;
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 100%;
     white-space: nowrap;
     display: block;
     color: #555;
+}
+
+.nav-link.active .nav-text {
+    color: #FF6C37;
+    font-weight: 600;
 }

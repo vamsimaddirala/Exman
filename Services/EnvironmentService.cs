@@ -318,72 +318,74 @@ namespace Exman.Services
         public ApiRequest ProcessRequest(ApiRequest request)
         {
             // Create a deep copy of the request
-            var processedRequest = request.Clone();
-            
+            //var newRequest = request.Clone();
+            var serializedRequest = JsonSerializer.Serialize(request);
+            var newRequest = JsonSerializer.Deserialize<ApiRequest>(serializedRequest);
+
             // Process URL
-            processedRequest.Url = ProcessString(processedRequest.Url);
+            newRequest.Url = ProcessString(newRequest.Url);
             
             // Process headers
-            foreach (var header in processedRequest.Headers)
+            foreach (var header in newRequest.Headers)
             {
                 header.Value = ProcessString(header.Value);
             }
             
             // Process query parameters
-            foreach (var param in processedRequest.QueryParameters)
+            foreach (var param in newRequest.QueryParameters)
             {
                 param.Value = ProcessString(param.Value);
             }
             
             // Process path variables
-            foreach (var param in processedRequest.PathVariables)
+            foreach (var param in newRequest.PathVariables)
             {
                 param.Value = ProcessString(param.Value);
             }
             
             // Process body
-            switch (processedRequest.Body.Type)
+            switch (newRequest.Body.Type)
             {
                 case RequestBody.BodyType.Raw:
-                    processedRequest.Body.RawContent = ProcessString(processedRequest.Body.RawContent);
+                    newRequest.Body.RawContent = ProcessString(newRequest.Body.RawContent);
                     break;
                 case RequestBody.BodyType.FormData:
-                    foreach (var param in processedRequest.Body.FormData)
+                    foreach (var param in newRequest.Body.FormData)
                     {
                         param.Value = ProcessString(param.Value);
                     }
                     break;
                 case RequestBody.BodyType.UrlEncoded:
-                    foreach (var param in processedRequest.Body.UrlEncodedData)
+                    foreach (var param in newRequest.Body.UrlEncodedData)
                     {
                         param.Value = ProcessString(param.Value);
                     }
                     break;
                 case RequestBody.BodyType.GraphQL:
-                    processedRequest.Body.GraphQLQuery = ProcessString(processedRequest.Body.GraphQLQuery);
-                    processedRequest.Body.GraphQLVariables = ProcessString(processedRequest.Body.GraphQLVariables);
+                    newRequest.Body.GraphQLQuery = ProcessString(newRequest.Body.GraphQLQuery);
+                    newRequest.Body.GraphQLVariables = ProcessString(newRequest.Body.GraphQLVariables);
                     break;
             }
             
             // Process authentication
-            if (processedRequest.Authentication.Enabled)
+            if (newRequest.Authentication.Enabled)
             {
-                switch (processedRequest.Authentication.Type)
+                switch (newRequest.Authentication.Type)
                 {
                     case Authentication.AuthType.Basic:
-                        processedRequest.Authentication.Username = ProcessString(processedRequest.Authentication.Username);
-                        processedRequest.Authentication.Password = ProcessString(processedRequest.Authentication.Password);
+                        newRequest.Authentication.Username = ProcessString(newRequest.Authentication.Username);
+                        newRequest.Authentication.Password = ProcessString(newRequest.Authentication.Password);
                         break;
                     case Authentication.AuthType.Bearer:
-                        processedRequest.Authentication.Token = ProcessString(processedRequest.Authentication.Token);
+                        newRequest.Authentication.Token = ProcessString(newRequest.Authentication.Token);
                         break;
                     case Authentication.AuthType.ApiKey:
-                        processedRequest.Authentication.ApiKey = ProcessString(processedRequest.Authentication.ApiKey);
+                        newRequest.Authentication.ApiKey = ProcessString(newRequest.Authentication.ApiKey);
                         break;
                 }
             }
             
-            return processedRequest;
+            return newRequest;
         }
         
         public async Task<RequestEnvironment> ImportPostmanEnvironmentAsync(string filePath)

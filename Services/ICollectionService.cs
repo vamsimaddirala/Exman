@@ -75,5 +75,22 @@ namespace Exman.Services
         /// Adds an API request to a collection
         /// </summary>
         Task<bool> AddRequestToCollectionAsync(string collectionId, ApiRequest request);
+
+        /// <summary>
+        /// Saves an API request to a specific folder in a collection
+        /// </summary>
+        /// <param name="collectionId">ID of the collection</param>
+        /// <param name="folderId">ID of the folder inside the collection. If empty, the request is saved at the root level.</param>
+        /// <param name="request">The API request to save</param>
+        /// <returns>True if successful, false otherwise</returns>
+        Task<bool> SaveRequestToFolderAsync(string collectionId, string folderId, ApiRequest request);
+
+        /// <summary>
+        /// Deletes an API request from a collection or any nested folder
+        /// </summary>
+        /// <param name="collectionId">ID of the collection or folder containing the request</param>
+        /// <param name="requestId">ID of the request to delete</param>
+        /// <returns>True if successful, false otherwise</returns>
+        Task<bool> DeleteRequestFromFolderAsync(string collectionId, string requestId);
     }
 }
