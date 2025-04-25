@@ -331,7 +331,7 @@ namespace Exman.Services
                         break;
                     case RequestBody.BodyType.UrlEncoded:
                         var formUrlEncoded = new List<KeyValuePair<string, string>>();
-                        foreach (var item in request.Body.UrlEncodedData.Where(f => f.Enabled))
+                        foreach (var item in request.Body.FormData.Where(f => f.Enabled))
                         {
                             formUrlEncoded.Add(new KeyValuePair<string, string>(item.Key, item.Value));
                         }

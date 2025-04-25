@@ -429,7 +429,7 @@ main {
     display: flex;
     flex-direction: column;
     background-color: #fff;
-    overflow: hidden;
+    overflow: scroll;
     min-height: 0; /* Critical for nested flexbox */
 }
 
@@ -879,8 +879,8 @@ main {
 
 .CodeMirror-scroll {
     min-height: 120px;
-    max-height: 60vh;
-    overflow-y: auto !important;
+    max-height: 20vh;
+    overflow-y: scroll !important;
 }
 
 .variable-input-container.multiline .CodeMirror {
@@ -889,7 +889,7 @@ main {
 
 .variable-input-container.multiline .CodeMirror-scroll {
     min-height: 200px;
-    max-height: 60vh;
+    max-height: 20vh;
     overflow-y: scroll !important;
     overflow-x: auto !important;
 }

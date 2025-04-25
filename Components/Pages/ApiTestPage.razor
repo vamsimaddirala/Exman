@@ -288,7 +288,7 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                        @foreach (var field in CurrentRequest.Body.UrlEncodedData)
+                                        @foreach (var field in CurrentRequest.Body.FormData)
                                         {
                                                     <tr>
                                                         <td><input type="checkbox" checked /></td>
@@ -392,11 +392,12 @@
                 </div>
         </div>
         </div>
-                <!-- Horizontal resizer for request/response sections -->
-                <div class="request-response-resizer" @onmousedown="OnRequestResponseResizerMouseDown"></div>
+                
 
                 <!-- Response section -->
                 <div class="response-section">
+                    <!-- Horizontal resizer for request/response sections -->
+                <div class="request-response-resizer" @onmousedown="OnRequestResponseResizerMouseDown"></div>
             @if (IsLoading)
             {
                             <div class="loading">Sending request...</div>
