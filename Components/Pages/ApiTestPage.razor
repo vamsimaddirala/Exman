@@ -425,1017 +425,983 @@
                                         <button class="copy-button" @onclick="CopyResponseToClipboard" title="Copy to clipboard">📋</button>
                                     </div>
                                 </div>
-                                <div class="response-body-container">
-                                    <pre class="response-body">@FormattedResponseBody</pre>       <pre class="response-body">@FormattedResponseBody</pre>
-                                </div>
+                                <pre class="response-body">@FormattedResponseBody</pre>
                             }
-                            else if (ActiveResponseTab == "headers")rs")
+                            else if (ActiveResponseTab == "headers")
                             {
-                                <table class="response-headers">="response-headers">
+                                <table class="response-headers">
                                     <thead>
                                         <tr>
-                                            <th>Key</th>th>Key</th>
-                                            <th>Value</th><th>Value</th>
-                                        </tr>r>
+                                            <th>Key</th>
+                                            <th>Value</th>
+                                        </tr>
                                     </thead>
-                                    <tbody>y>
-                                        @foreach (var header in CurrentResponse.Headers) (var header in CurrentResponse.Headers)
+                                    <tbody>
+                                        @foreach (var header in CurrentResponse.Headers)
                                         {
                                             <tr>
-                                                <td>@header.Key</td>td>@header.Key</td>
-                                                <td>@header.Value</td>       <td>@header.Value</td>
-                                            </tr></tr>
-                                        }}
-                                    </tbody>       </tbody>
+                                                <td>@header.Key</td>
+                                                <td>@header.Value</td>
+                                            </tr>
+                                        }
+                                    </tbody>
                                 </table>
                             }
-                            else if (ActiveResponseTab == "cookies") "cookies")
+                            else if (ActiveResponseTab == "cookies")
                             {
-                                <div class="cookies-tab">lass="cookies-tab">
-                                    <p>No cookies found in response</p>       <p>No cookies found in response</p>
+                                <div class="cookies-tab">
+                                    <p>No cookies found in response</p>
                                 </div>
                             }
-                            else if (ActiveResponseTab == "test-results")t-results")
+                            else if (ActiveResponseTab == "test-results")
                             {
-                                <div class="test-results-tab">lass="test-results-tab">
-                                    <p>No tests were run</p>       <p>No tests were run</p>
-                                </div>  </div>
-                            }       }
-                        </div></div>
+                                <div class="test-results-tab">
+                                    <p>No tests were run</p>
+                                </div>
+                            }
+                        </div>
                     }
                     else
                     {
                         <div class="no-response">
                             <div class="center-message">
-                                <i class="icon-no-response"></i> class="icon-no-response"></i>
-                                <p>Send a request to see the response</p>  <p>Send a request to see the response</p>
-                            </div>       </div>
-                        </div>  </div>
-                    }  }
-                </div>  </div>
-            </div>            </div>
+                                <i class="icon-no-response"></i>
+                                <p>Send a request to see the response</p>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
         </div>
 
         @if (showSaveModal)
         {
-            <div class="modal-backdrop" @onclick="CloseSaveModal"></div>nclick="CloseSaveModal"></div>
+            <div class="modal-backdrop" @onclick="CloseSaveModal"></div>
             <div class="modal">
                 <div class="modal-header">
-                    <h3>Save Request</h3>3>Save Request</h3>
-                    <button class="close-button" @onclick="CloseSaveModal">×</button>-button" @onclick="CloseSaveModal">×</button>
+                    <h3>Save Request</h3>
+                    <button class="close-button" @onclick="CloseSaveModal">×</button>
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
-                        <label>Request Name</label>abel>Request Name</label>
-                        <input type="text" @bind="newRequestName" placeholder="Enter a name for this request" />bind="newRequestName" placeholder="Enter a name for this request" />
+                        <label>Request Name</label>
+                        <input type="text" @bind="newRequestName" placeholder="Enter a name for this request" />
                     </div>
                     <div class="form-group">
                         <label>Collection</label>
-                        <select @onchange="OnCollectionSelected" value="@selectedCollectionId">ue="@selectedCollectionId">
-                            <option value="">Select a collection</option>option value="">Select a collection</option>
+                        <select @onchange="OnCollectionSelected" value="@selectedCollectionId">
+                            <option value="">Select a collection</option>
                             @foreach (var collection in Collections)
                             {
-                                <option value="@collection.Id">@collection.Name</option>option value="@collection.Id">@collection.Name</option>
-                            }  }
-                        </select>  </select>
+                                <option value="@collection.Id">@collection.Name</option>
+                            }
+                        </select>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button class="cancel-button" @onclick="CloseSaveModal">Cancel</button>utton class="cancel-button" @onclick="CloseSaveModal">Cancel</button>
-                    <button class="save-button" @onclick="SaveToCollection">Save</button>  <button class="save-button" @onclick="SaveToCollection">Save</button>
-                </div>       </div>
-            </div>            </div>
+                    <button class="cancel-button" @onclick="CloseSaveModal">Cancel</button>
+                    <button class="save-button" @onclick="SaveToCollection">Save</button>
+                </div>
+            </div>
         }
 
         @if (showSaveAsModal)
         {
-            <div class="modal-backdrop" @onclick="CloseSaveAsModal"></div>nclick="CloseSaveAsModal"></div>
+            <div class="modal-backdrop" @onclick="CloseSaveAsModal"></div>
             <div class="modal">
                 <div class="modal-header">
-                    <h3>Save Request As</h3>3>Save Request As</h3>
-                    <button class="close-button" @onclick="CloseSaveAsModal">×</button>-button" @onclick="CloseSaveAsModal">×</button>
+                    <h3>Save Request As</h3>
+                    <button class="close-button" @onclick="CloseSaveAsModal">×</button>
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
-                        <label>Request Name</label>abel>Request Name</label>
-                        <input type="text" @bind="newRequestName" placeholder="Enter a name for this request" />bind="newRequestName" placeholder="Enter a name for this request" />
+                        <label>Request Name</label>
+                        <input type="text" @bind="newRequestName" placeholder="Enter a name for this request" />
                     </div>
                     <div class="form-group">
                         <label>Collection</label>
-                        <select value="selectedCollectionId" @onchange="OnCollectionSelected">ge="OnCollectionSelected">
-                            <option value="">Select a collection</option>option value="">Select a collection</option>
+                        <select value="selectedCollectionId" @onchange="OnCollectionSelected">
+                            <option value="">Select a collection</option>
                             @foreach (var collection in Collections)
                             {
-                                <option value="@collection.Id">@collection.Name</option>option value="@collection.Id">@collection.Name</option>
-                            }  }
+                                <option value="@collection.Id">@collection.Name</option>
+                            }
                         </select>
                     </div>
-                    <div class="collection-tree-container">class="collection-tree-container">
-                        @if (!string.IsNullOrEmpty(selectedCollectionId) && currentCollection != null)edCollectionId) && currentCollection != null)
+                    <div class="collection-tree-container">
+                        @if (!string.IsNullOrEmpty(selectedCollectionId) && currentCollection != null)
                         {
                             <div class="collection-path">
                                 <span>Current path: </span>
-                                <span class="path-item" @onclick="() => NavigateToRoot()">Root</span>span class="path-item" @onclick="() => NavigateToRoot()">Root</span>
-                                @foreach (var (folder, index) in navigationPath.Select((folder, index) => (folder, index)))r, index) in navigationPath.Select((folder, index) => (folder, index)))
+                                <span class="path-item" @onclick="() => NavigateToRoot()">Root</span>
+                                @foreach (var (folder, index) in navigationPath.Select((folder, index) => (folder, index)))
                                 {
-                                    <span> > </span>   <span> > </span>
-                                    <span class="path-item" @onclick="() => NavigateToPathIndex(index)">@folder.Name</span>  <span class="path-item" @onclick="() => NavigateToPathIndex(index)">@folder.Name</span>
+                                    <span> > </span>
+                                    <span class="path-item" @onclick="() => NavigateToPathIndex(index)">@folder.Name</span>
                                 }
-                            </div>/div>
+                            </div>
                             @if (currentFolders.Any())
                             {
-                                <div class="folder-list">class="folder-list">
+                                <div class="folder-list">
                                     @foreach (var folder in currentFolders)
                                     {
-                                        <div class="folder-item" @onclick="() => NavigateToFolder(folder)">ToFolder(folder)">
-                                            <span class="folder-icon">📁</span>pan class="folder-icon">📁</span>
-                                            <span class="folder-name">@folder.Name</span>       <span class="folder-name">@folder.Name</span>
-                                        </div>  </div>
-                                    }       }
-                                </div>       </div>
-                            }  }
-                        }  }
+                                        <div class="folder-item" @onclick="() => NavigateToFolder(folder)">
+                                            <span class="folder-icon">📁</span>
+                                            <span class="folder-name">@folder.Name</span>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        }
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button class="cancel-button" @onclick="CloseSaveAsModal">Cancel</button>
-                    <button class="save-button" @onclick="SaveAsToCollection" utton class="save-button" @onclick="SaveAsToCollection" 
-                    disabled="@(string.IsNullOrEmpty(selectedCollectionId) || Collections.Count == 0)">Save</button>  disabled="@(string.IsNullOrEmpty(selectedCollectionId) || Collections.Count == 0)">Save</button>
-                </div>       </div>
-            </div>            </div>
+                    <button class="save-button" @onclick="SaveAsToCollection" 
+                    disabled="@(string.IsNullOrEmpty(selectedCollectionId) || Collections.Count == 0)">Save</button>
+                </div>
+            </div>
         }
 
         @if (showCollectionModal)
         {
-            <div class="modal-backdrop" @onclick="CloseCollectionModal"></div>nclick="CloseCollectionModal"></div>
+            <div class="modal-backdrop" @onclick="CloseCollectionModal"></div>
             <div class="modal">
                 <div class="modal-header">
-                    <h3>@(editingCollection.Id == null ? "Create New Collection" : "Edit Collection")</h3>3>@(editingCollection.Id == null ? "Create New Collection" : "Edit Collection")</h3>
-                    <button class="close-button" @onclick="CloseCollectionModal">×</button>-button" @onclick="CloseCollectionModal">×</button>
+                    <h3>@(editingCollection.Id == null ? "Create New Collection" : "Edit Collection")</h3>
+                    <button class="close-button" @onclick="CloseCollectionModal">×</button>
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
-                        <label>Collection Name</label>abel>Collection Name</label>
-                        <input type="text" @bind="editingCollection.Name" placeholder="Enter a name for this collection" />bind="editingCollection.Name" placeholder="Enter a name for this collection" />
+                        <label>Collection Name</label>
+                        <input type="text" @bind="editingCollection.Name" placeholder="Enter a name for this collection" />
                     </div>
                     <div class="form-group">
-                        <label>Description</label>abel>Description</label>
-                        <textarea @bind="editingCollection.Description" placeholder="Enter a description (optional)" rows="3"></textarea>  <textarea @bind="editingCollection.Description" placeholder="Enter a description (optional)" rows="3"></textarea>
+                        <label>Description</label>
+                        <textarea @bind="editingCollection.Description" placeholder="Enter a description (optional)" rows="3"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button class="cancel-button" @onclick="CloseCollectionModal">Cancel</button>utton class="cancel-button" @onclick="CloseCollectionModal">Cancel</button>
-                    <button class="save-button" @onclick="SaveCollection">Save</button>  <button class="save-button" @onclick="SaveCollection">Save</button>
-                </div>       </div>
-            </div>            </div>
+                    <button class="cancel-button" @onclick="CloseCollectionModal">Cancel</button>
+                    <button class="save-button" @onclick="SaveCollection">Save</button>
+                </div>
+            </div>
         }
 
         @if (showDeleteCollectionModal)
         {
-            <div class="modal-backdrop" @onclick="CloseDeleteCollectionModal"></div>nclick="CloseDeleteCollectionModal"></div>
+            <div class="modal-backdrop" @onclick="CloseDeleteCollectionModal"></div>
             <div class="modal">
                 <div class="modal-header">
-                    <h3>Delete Collection</h3>3>Delete Collection</h3>
-                    <button class="close-button" @onclick="CloseDeleteCollectionModal">×</button>-button" @onclick="CloseDeleteCollectionModal">×</button>
+                    <h3>Delete Collection</h3>
+                    <button class="close-button" @onclick="CloseDeleteCollectionModal">×</button>
                 </div>
-                <div class="modal-body">lass="modal-body">
-                    <p>Are you sure you want to delete the collection "<strong>@collectionToDeleteName</strong>"?</p>nt to delete the collection "<strong>@collectionToDeleteName</strong>"?</p>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete the collection "<strong>@collectionToDeleteName</strong>"?</p>
                 </div>
                 <div class="modal-footer">
-                    <button class="cancel-button" @onclick="CloseDeleteCollectionModal">Cancel</button>utton class="cancel-button" @onclick="CloseDeleteCollectionModal">Cancel</button>
-                    <button class="delete-button" @onclick="DeleteCollection">Delete</button>  <button class="delete-button" @onclick="DeleteCollection">Delete</button>
-                </div>       </div>
-            </div>            </div>
+                    <button class="cancel-button" @onclick="CloseDeleteCollectionModal">Cancel</button>
+                    <button class="delete-button" @onclick="DeleteCollection">Delete</button>
+                </div>
+            </div>
         }
 
         @if (showImportDialog)
         {
-            <div class="modal-backdrop" @onclick="CloseImportDialog"></div>nclick="CloseImportDialog"></div>
+            <div class="modal-backdrop" @onclick="CloseImportDialog"></div>
             <div class="modal">
                 <div class="modal-header">
-                    <h3>Import Collection</h3>3>Import Collection</h3>
-                    <button class="close-button" @onclick="CloseImportDialog">×</button>-button" @onclick="CloseImportDialog">×</button>
+                    <h3>Import Collection</h3>
+                    <button class="close-button" @onclick="CloseImportDialog">×</button>
                 </div>
                 <div class="modal-body">
                     <div class="import-tabs">
                         <div class="tabs">
-                            <button class='tab-button @(importTab == "file" ? "active" : "")' @onclick='() => importTab = "file"'>From File</button>utton class='tab-button @(importTab == "file" ? "active" : "")' @onclick='() => importTab = "file"'>From File</button>
-                            <button class='tab-button @(importTab == "raw" ? "active" : "")' @onclick='() => importTab = "raw"'>Raw JSON</button>                            <button class='tab-button @(importTab == "raw" ? "active" : "")' @onclick='() => importTab = "raw"'>Raw JSON</button>
+                            <button class='tab-button @(importTab == "file" ? "active" : "")' @onclick='() => importTab = "file"'>From File</button>
+                            <button class='tab-button @(importTab == "raw" ? "active" : "")' @onclick='() => importTab = "raw"'>Raw JSON</button>
                         </div>
 
-                        <div class="tab-content">class="tab-content">
+                        <div class="tab-content">
                             @if (importTab == "file")
                             {
                                 <div class="file-import-tab">
-                                    <p>Select a Postman Collection JSON file to import:</p> import:</p>
-                                    <InputFile OnChange="OnFileChange" class="file-input" accept=".json" />InputFile OnChange="OnFileChange" class="file-input" accept=".json" />
-                                    @if (!string.IsNullOrEmpty(importFileName))rtFileName))
+                                    <p>Select a Postman Collection JSON file to import:</p>
+                                    <InputFile OnChange="OnFileChange" class="file-input" accept=".json" />
+                                    @if (!string.IsNullOrEmpty(importFileName))
                                     {
-                                        <div class="file-selected">lass="file-selected">
-                                            <span>@importFileName</span>       <span>@importFileName</span>
-                                        </div>  </div>
-                                    }       }
+                                        <div class="file-selected">
+                                            <span>@importFileName</span>
+                                        </div>
+                                    }
                                 </div>
                             }
                             else if (importTab == "raw")
                             {
                                 <div class="raw-import-tab">
-                                    <p>Paste your Postman Collection JSON:</p>>Paste your Postman Collection JSON:</p>
-                                    <textarea @bind="importJsonText" rows="10" class="json-textarea" placeholder='{ "info": { "name": "Collection Name" }, "item": [] }' />       <textarea @bind="importJsonText" rows="10" class="json-textarea" placeholder='{ "info": { "name": "Collection Name" }, "item": [] }' />
-                                </div>  </div>
-                            }                            }
+                                    <p>Paste your Postman Collection JSON:</p>
+                                    <textarea @bind="importJsonText" rows="10" class="json-textarea" placeholder='{ "info": { "name": "Collection Name" }, "item": [] }' />
+                                </div>
+                            }
                         </div>
 
-                        @if (!string.IsNullOrEmpty(importError))ortError))
+                        @if (!string.IsNullOrEmpty(importError))
                         {
-                            <div class="import-error">lass="import-error">
-                                <p>@importError</p>       <p>@importError</p>
-                            </div>  </div>
-                        }  }
+                            <div class="import-error">
+                                <p>@importError</p>
+                            </div>
+                        }
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button class="cancel-button" @onclick="CloseImportDialog">Cancel</button>utton class="cancel-button" @onclick="CloseImportDialog">Cancel</button>
-                    <button class="import-button" @onclick="ImportCollection" disabled="@(!CanImport())">Import</button>  <button class="import-button" @onclick="ImportCollection" disabled="@(!CanImport())">Import</button>
-                </div>       </div>
-            </div>            </div>
+                    <button class="cancel-button" @onclick="CloseImportDialog">Cancel</button>
+                    <button class="import-button" @onclick="ImportCollection" disabled="@(!CanImport())">Import</button>
+                </div>
+            </div>
         }
 
         @if (showDeleteRequestModal)
         {
-            <div class="modal-backdrop" @onclick="CloseDeleteRequestModal"></div>nclick="CloseDeleteRequestModal"></div>
+            <div class="modal-backdrop" @onclick="CloseDeleteRequestModal"></div>
             <div class="modal">
                 <div class="modal-header">
-                    <h3>Delete Request</h3>3>Delete Request</h3>
-                    <button class="close-button" @onclick="CloseDeleteRequestModal">×</button>-button" @onclick="CloseDeleteRequestModal">×</button>
+                    <h3>Delete Request</h3>
+                    <button class="close-button" @onclick="CloseDeleteRequestModal">×</button>
                 </div>
                 <div class="modal-body">
-                    <p>Are you sure you want to delete the request "@requestToDeleteName"?</p>>Are you sure you want to delete the request "@requestToDeleteName"?</p>
-                    <p>This action cannot be undone.</p>be undone.</p>
+                    <p>Are you sure you want to delete the request "@requestToDeleteName"?</p>
+                    <p>This action cannot be undone.</p>
                 </div>
                 <div class="modal-footer">
-                    <button class="cancel-button" @onclick="CloseDeleteRequestModal">Cancel</button>utton class="cancel-button" @onclick="CloseDeleteRequestModal">Cancel</button>
-                    <button class="delete-button" @onclick="ConfirmDeleteRequest">Delete</button>  <button class="delete-button" @onclick="ConfirmDeleteRequest">Delete</button>
-                </div>       </div>
-            </div>/div>
+                    <button class="cancel-button" @onclick="CloseDeleteRequestModal">Cancel</button>
+                    <button class="delete-button" @onclick="ConfirmDeleteRequest">Delete</button>
+                </div>
+            </div>
         }
-        </div>
-        <style>
-            .response-body-container {            // Store previous raw content to preserve when switching between content types
-                max-height: 500px;tent = new Dictionary<string, string>();
-                overflow: auto;
-                border: 1px solid #e0e0e0;            // Track the raw content type for the dropdown
-                padding: 8px;
-                background-color: #f8f8f8;
-                border-radius: 4px;st { get; set; } = new ApiRequest
-            }
-
-            .response-body {
-                white-space: pre-wrap;tion<Exman.Models.KeyValuePair>(),
-                word-break: break-all;leCollection<Exman.Models.KeyValuePair>(),
-                margin: 0;uthentication = new Authentication(),
-                font-family: monospace;
-            }
-
-            .response-content {  FormData = new ObservableCollection<Exman.Models.KeyValuePair>(),
-                flex: 1;servableCollection<Exman.Models.KeyValuePair>()
-                display: flex;  },
-                flex-direction: column;                Proxy = new ProxySettings()
-                overflow: hidden;
-            }
-
-            .response-section {            private List<ApiRequest> OpenTabs { get; set; } = new List<ApiRequest>();
-                display: flex;-1 means no tab is active (using CurrentRequest)
-                flex-direction: column;
-                flex: 1;
-                min-height: 200px;ams";
-                overflow: hidden;;
-            }
-        </style>
-        @code {            private List<RequestEnvironment> Environments { get; set; } = new List<RequestEnvironment>();
-            // Store previous raw content to preserve when switching between content types= new List<Variable>();
+        </div
+        @code {
+            // Store previous raw content to preserve when switching between content types
             private Dictionary<string, string> savedRawContent = new Dictionary<string, string>();
-            // Environment cache to store all environment variables in memory
-            // Track the raw content type for the dropdown RequestEnvironment>();
+
+            // Track the raw content type for the dropdown
             private string rawContentType = "application/json";
-            private List<Exman.Models.Collection> Collections { get; set; } = new List<Exman.Models.Collection>();
-            private ApiRequest CurrentRequest { get; set; } = new ApiRequestattedResponseBody { get; set; } = "";
+
+            private ApiRequest CurrentRequest { get; set; } = new ApiRequest
             {
                 Method = ApiHttpMethod.GET,
                 Url = "",
                 QueryParameters = new ObservableCollection<Exman.Models.KeyValuePair>(),
                 Headers = new ObservableCollection<Exman.Models.KeyValuePair>(),
-                Authentication = new Authentication(),dal = false;
-                Body = new RequestBodyse;
+                Authentication = new Authentication(),
+                Body = new RequestBody
                 {
                     ContentType = "none",
-                    FormData = new ObservableCollection<Exman.Models.KeyValuePair>(),ection = new Exman.Models.Collection();
-                    UrlEncodedData = new ObservableCollection<Exman.Models.KeyValuePair>();
-                },= "";
-                Proxy = new ProxySettings()            private string requestToDeleteName = "";
-            };eteId = "";
+                    FormData = new ObservableCollection<Exman.Models.KeyValuePair>(),
+                    UrlEncodedData = new ObservableCollection<Exman.Models.KeyValuePair>()
+                },
+                Proxy = new ProxySettings()
+            };
 
             // Track open request tabs
             private List<ApiRequest> OpenTabs { get; set; } = new List<ApiRequest>();
-            private int ActiveTabIndex { get; set; } = -1; // -1 means no tab is active (using CurrentRequest)            private List<Exman.Models.Collection> currentFolders = new List<Exman.Models.Collection>();
-ollection> navigationPath = new List<Exman.Models.Collection>();
+            private int ActiveTabIndex { get; set; } = -1; // -1 means no tab is active (using CurrentRequest)
+
             private ApiResponse? CurrentResponse { get; set; }
             private string ActiveTab { get; set; } = "params";
-            private string ActiveResponseTab { get; set; } = "body"; false;
+            private string ActiveResponseTab { get; set; } = "body";
             private bool IsLoading { get; set; } = false;
             private string CurrentEnvironmentId { get; set; } = "";
-            private List<RequestEnvironment> Environments { get; set; } = new List<RequestEnvironment>();";
-            private List<Variable> CurrentEnvironmentVariables { get; set; } = new List<Variable>();            private string importError = "";
+            private List<RequestEnvironment> Environments { get; set; } = new List<RequestEnvironment>();
+            private List<Variable> CurrentEnvironmentVariables { get; set; } = new List<Variable>();
 
             // Environment cache to store all environment variables in memory
-            private Dictionary<string, RequestEnvironment> EnvironmentCache { get; set; } = new Dictionary<string, RequestEnvironment>();sync Task OnAfterRenderAsync(bool firstRender)
+            private Dictionary<string, RequestEnvironment> EnvironmentCache { get; set; } = new Dictionary<string, RequestEnvironment>();
 
             private List<Exman.Models.Collection> Collections { get; set; } = new List<Exman.Models.Collection>();
             private string FormattedResponseBody { get; set; } = "";
-                    // Initialize sidebar resizer
-            // Modal propertiesvokeVoidAsync("initializeSidebarResizer");
+
+            // Modal properties
             private bool showSaveModal = false;
-            private bool showSaveAsModal = false;       StateHasChanged();
-            private bool showCollectionModal = false;                }
-            private bool showDeleteCollectionModal = false;            }
+            private bool showSaveAsModal = false;
+            private bool showCollectionModal = false;
+            private bool showDeleteCollectionModal = false;
             private bool showDeleteRequestModal = false;
             private string newRequestName = "";
             private string selectedCollectionId = "";
             private Exman.Models.Collection editingCollection = new Exman.Models.Collection();
-            private string collectionToDeleteId = "";                Environments = (await EnvironmentService.GetEnvironmentsAsync()).ToList();
-            private string collectionToDeleteName = "";tionsAsync()).ToList();
+            private string collectionToDeleteId = "";
+            private string collectionToDeleteName = "";
             private string requestToDeleteName = "";
-            private string requestToDeleteId = "";ronmentId))
+            private string requestToDeleteId = "";
 
-            // Save As modal properties                    await LoadEnvironmentVariables();
+            // Save As modal properties
             private Exman.Models.Collection? currentCollection;
             private List<Exman.Models.Collection> currentFolders = new List<Exman.Models.Collection>();
-            private List<Exman.Models.Collection> navigationPath = new List<Exman.Models.Collection>();                // Check for URL parameters
-Uri);
+            private List<Exman.Models.Collection> navigationPath = new List<Exman.Models.Collection>();
+
             // Import dialog properties
-            private bool showImportDialog = false;ific collection
-            private string importTab = "file";ar collectionIdParam = System.Web.HttpUtility.ParseQueryString(uri.Query).Get("collectionId");
+            private bool showImportDialog = false;
+            private string importTab = "file";
             private string? importFileName;
             private string importJsonText = "";
-            private string importError = "";specified collection
-            private IBrowserFile? importFile;ar collection = Collections.FirstOrDefault(c => c.Id == collectionIdParam);
+            private string importError = "";
+            private IBrowserFile? importFile;
 
             protected override async Task OnAfterRenderAsync(bool firstRender)
-            {   // No need to explicitly select the collection as the CollectionTree component
-                if (firstRender)       // will handle displaying it based on its own selection logic
-                {                    }
+            {
+                if (firstRender)
+                {
                     // Initialize sidebar resizer
                     await JSRuntime.InvokeVoidAsync("initializeSidebarResizer");
-y)
-                    StateHasChanged();ar requestIdParam = System.Web.HttpUtility.ParseQueryString(uri.Query).Get("requestId");
-                }aram))
+
+                    StateHasChanged();
+                }
             }
-story
-ar historyRequest = await RequestHistoryService.GetRequestByIdAsync(requestIdParam);
+
+
             protected override async Task OnInitializedAsync()
-            {                    {
+            {
                 Environments = (await EnvironmentService.GetEnvironmentsAsync()).ToList();
                 Collections = (await CollectionService.GetCollectionsAsync()).ToList();
-/ Set the appropriate tab based on the request data
-                if (!string.IsNullOrEmpty(CurrentEnvironmentId)) != null && CurrentRequest.Body.ContentType != "none")
+
+                if (!string.IsNullOrEmpty(CurrentEnvironmentId))
                 {
                     await LoadEnvironmentVariables();
                 }
-aders.Count > 0)
+
                 // Check for URL parameters
-                var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);ActiveTab = "headers";
+                var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
 
                 // Handle collectionId parameter to open specific collection
                 var collectionIdParam = System.Web.HttpUtility.ParseQueryString(uri.Query).Get("collectionId");
-                if (!string.IsNullOrEmpty(collectionIdParam))       ActiveTab = "params";
-                {       }
-                    // Find and select the specified collection                    }
-                    var collection = Collections.FirstOrDefault(c => c.Id == collectionIdParam);                }
+                if (!string.IsNullOrEmpty(collectionIdParam))
+                {
+                    // Find and select the specified collection
+                    var collection = Collections.FirstOrDefault(c => c.Id == collectionIdParam);
                     if (collection != null)
                     {
                         // No need to explicitly select the collection as the CollectionTree component
                         // will handle displaying it based on its own selection logic
-                    } async Task SendRequest()
+                    }
                 }
 
-                // Handle requestId parameter (from history)                {
+                // Handle requestId parameter (from history)
                 var requestIdParam = System.Web.HttpUtility.ParseQueryString(uri.Query).Get("requestId");
                 if (!string.IsNullOrEmpty(requestIdParam))
-                {ng.IsNullOrEmpty(CurrentEnvironmentId))
+                {
                     // Load the request from history
                     var historyRequest = await RequestHistoryService.GetRequestByIdAsync(requestIdParam);
-                    if (historyRequest != null)   // Set the current environment in the EnvironmentService
-                    {rvice.SetCurrentEnvironmentAsync(CurrentEnvironmentId);
+                    if (historyRequest != null)
+                    {
                         CurrentRequest = historyRequest.Clone();
 
                         // Set the appropriate tab based on the request data
-                        if (CurrentRequest.Body != null && CurrentRequest.Body.ContentType != "none")   Console.WriteLine($"Environment error: {envEx.Message}");
-                        {       // Continue with the request even if the environment could not be set
-                            ActiveTab = "body";                        }
+                        if (CurrentRequest.Body != null && CurrentRequest.Body.ContentType != "none")
+                        {
+                            ActiveTab = "body";
                         }
                         else if (CurrentRequest.Headers.Count > 0)
-                        {                    // Send the request using ApiRequestService
-                            ActiveTab = "headers"; await ApiRequestService.SendRequestAsync(CurrentRequest);
+                        {
+                            ActiveTab = "headers";
                         }
-                        else                    // Add to history
-                        {storyAsync(CurrentRequest.Clone(), CurrentResponse);
+                        else
+                        {
                             ActiveTab = "params";
-                        }   // Format response body for display
+                        }
                     }
                 }
 
 
-            }/ Handle network/connection related errors
+            }
 
             private async Task SendRequest()
             {
                 try
-                {Message}\n\nDetails: {ex.InnerException?.Message ?? "No additional details"}",
-                    IsLoading = true;  Headers = new ObservableCollection<Exman.Models.KeyValuePair>(),
+                {
+                    IsLoading = true;
 
-                    if (!string.IsNullOrEmpty(CurrentEnvironmentId))                    };
-                    {eBody = CurrentResponse.Body;
+                    if (!string.IsNullOrEmpty(CurrentEnvironmentId))
+                    {
                         try {
                             // Set the current environment in the EnvironmentService
-                            await EnvironmentService.SetCurrentEnvironmentAsync(CurrentEnvironmentId);   Console.WriteLine($"HTTP Request Error: {ex.Message}");
-                        }ace: {ex.StackTrace}");
+                            await EnvironmentService.SetCurrentEnvironmentAsync(CurrentEnvironmentId);
+                        }
                         catch (Exception envEx)
-                        { ex)
+                        {
                             Console.WriteLine($"Environment error: {envEx.Message}");
-                            // Continue with the request even if the environment could not be set/ Handle timeout errors
+                            // Continue with the request even if the environment could not be set
                         }
                     }
 
-                    // Send the request using ApiRequestService Timeout
-                    CurrentResponse = await ApiRequestService.SendRequestAsync(CurrentRequest);.",
-  Headers = new ObservableCollection<Exman.Models.KeyValuePair>(),
-                    // Add to historyCurrentRequest.Timeout)
-                    await RequestHistoryService.AddToHistoryAsync(CurrentRequest.Clone(), CurrentResponse);                    };
-eBody = CurrentResponse.Body;
+                    // Send the request using ApiRequestService
+                    CurrentResponse = await ApiRequestService.SendRequestAsync(CurrentRequest);
+
+                    // Add to history
+                    await RequestHistoryService.AddToHistoryAsync(CurrentRequest.Clone(), CurrentResponse);
+
                     // Format response body for display
-                    FormatResponseBody();   // Log the error
-                }Request Timeout: {ex.Message}");
+                    FormatResponseBody();
+                }
                 catch (HttpRequestException ex)
                 {
                     // Handle network/connection related errors
-                    CurrentResponse = new ApiResponse/ Handle JSON parsing errors
+                    CurrentResponse = new ApiResponse
                     {
                         StatusDescription = "Network Error",
                         StatusCode = (System.Net.HttpStatusCode)0,
                         Body = $"Network error: {ex.Message}\n\nDetails: {ex.InnerException?.Message ?? "No additional details"}",
-                        Headers = new ObservableCollection<Exman.Models.KeyValuePair>(), {ex.Message}\n\nLine: {ex.LineNumber}, Position: {ex.BytePositionInLine}",
-                        ResponseTime = TimeSpan.Zero  Headers = new ObservableCollection<Exman.Models.KeyValuePair>(),
-                    };
-                    FormattedResponseBody = CurrentResponse.Body;                    };
-eBody = CurrentResponse.Body;
-                    // Log the error
-                    Console.WriteLine($"HTTP Request Error: {ex.Message}");   // Log the error
-                    Console.WriteLine($"Stack Trace: {ex.StackTrace}");e($"JSON Parsing Error: {ex.Message}");
-                }
-                catch (TaskCanceledException ex)
-                {
-                    // Handle timeout errors
-                    CurrentResponse = new ApiResponsels = ex.InnerException != null 
-                    {                        ? $"{ex.Message}\n\nInner Exception: {ex.InnerException.Message}"
-                        StatusDescription = "Request Timeout",
-                        StatusCode = (System.Net.HttpStatusCode)408, // HTTP 408 Request Timeout
-                        Body = $"The request timed out after {CurrentRequest.Timeout} ms.",e
                         Headers = new ObservableCollection<Exman.Models.KeyValuePair>(),
-                        ResponseTime = TimeSpan.FromMilliseconds(CurrentRequest.Timeout)
-                    };
-                    FormattedResponseBody = CurrentResponse.Body; occurred: {errorDetails}",
-  Headers = new ObservableCollection<Exman.Models.KeyValuePair>(),
-                    // Log the error
-                    Console.WriteLine($"Request Timeout: {ex.Message}");                    };
-                }
-                catch (JsonException ex)
-                {
-                    // Handle JSON parsing errors   Console.WriteLine($"Unexpected error in SendRequest: {ex.Message}");
-                    CurrentResponse = new ApiResponsesole.WriteLine($"Stack Trace: {ex.StackTrace}");
-                    {
-                        StatusDescription = "JSON Parsing Error",
-                        StatusCode = (System.Net.HttpStatusCode)0,
-                        Body = $"Error parsing JSON: {ex.Message}\n\nLine: {ex.LineNumber}, Position: {ex.BytePositionInLine}",       IsLoading = false;
-                        Headers = new ObservableCollection<Exman.Models.KeyValuePair>(),                }
                         ResponseTime = TimeSpan.Zero
                     };
                     FormattedResponseBody = CurrentResponse.Body;
 
-                    // Log the errord is in a tab), update it in its collection
-                    Console.WriteLine($"JSON Parsing Error: {ex.Message}");f (ActiveTabIndex >= 0 && !string.IsNullOrEmpty(CurrentRequest.Id) && 
-                }CollectionId))
+                    // Log the error
+                    Console.WriteLine($"HTTP Request Error: {ex.Message}");
+                    Console.WriteLine($"Stack Trace: {ex.StackTrace}");
+                }
+                catch (TaskCanceledException ex)
+                {
+                    // Handle timeout errors
+                    CurrentResponse = new ApiResponse
+                    {
+                        StatusDescription = "Request Timeout",
+                        StatusCode = (System.Net.HttpStatusCode)408, // HTTP 408 Request Timeout
+                        Body = $"The request timed out after {CurrentRequest.Timeout} ms.",
+                        Headers = new ObservableCollection<Exman.Models.KeyValuePair>(),
+                        ResponseTime = TimeSpan.FromMilliseconds(CurrentRequest.Timeout)
+                    };
+                    FormattedResponseBody = CurrentResponse.Body;
+
+                    // Log the error
+                    Console.WriteLine($"Request Timeout: {ex.Message}");
+                }
+                catch (JsonException ex)
+                {
+                    // Handle JSON parsing errors
+                    CurrentResponse = new ApiResponse
+                    {
+                        StatusDescription = "JSON Parsing Error",
+                        StatusCode = (System.Net.HttpStatusCode)0,
+                        Body = $"Error parsing JSON: {ex.Message}\n\nLine: {ex.LineNumber}, Position: {ex.BytePositionInLine}",
+                        Headers = new ObservableCollection<Exman.Models.KeyValuePair>(),
+                        ResponseTime = TimeSpan.Zero
+                    };
+                    FormattedResponseBody = CurrentResponse.Body;
+
+                    // Log the error
+                    Console.WriteLine($"JSON Parsing Error: {ex.Message}");
+                }
                 catch (Exception ex)
                 {
                     // Handle all other unexpected errors
                     string errorDetails = ex.InnerException != null 
-                        ? $"{ex.Message}\n\nInner Exception: {ex.InnerException.Message}"e parent folder by searching through the collections
-                        : ex.Message;ar collection = Collections.FirstOrDefault(c => c.Id == CurrentRequest.CollectionId);
+                        ? $"{ex.Message}\n\nInner Exception: {ex.InnerException.Message}"
+                        : ex.Message;
 
                     CurrentResponse = new ApiResponse
-                    {// Find the request in the collection or its folders to determine the parent folder
+                    {
                         StatusDescription = "Error",
                         StatusCode = (System.Net.HttpStatusCode)0,
-                        Body = $"An unexpected error occurred: {errorDetails}",/ Check if it's in the root of the collection
-                        Headers = new ObservableCollection<Exman.Models.KeyValuePair>(),quests.Any(r => r.Id == CurrentRequest.Id))
+                        Body = $"An unexpected error occurred: {errorDetails}",
+                        Headers = new ObservableCollection<Exman.Models.KeyValuePair>(),
                         ResponseTime = TimeSpan.Zero
-                    };   found = true;
-                    FormattedResponseBody = CurrentResponse.Body;    // It's in root, so parentFolderId remains empty
+                    };
+                    FormattedResponseBody = CurrentResponse.Body;
 
                     // Log the error with stack trace for debugging
-                    Console.WriteLine($"Unexpected error in SendRequest: {ex.Message}");/ If not found at the root, search in the folders
+                    Console.WriteLine($"Unexpected error in SendRequest: {ex.Message}");
                     Console.WriteLine($"Stack Trace: {ex.StackTrace}");
                 }
-                finally       FindRequestInFolders(collection.Folders, CurrentRequest.Id, ref parentFolderId, ref found);
-                {    }
+                finally
+                {
                     IsLoading = false;
                 }
-            }                    // Update request using SaveRequestToFolderAsync to maintain folder structure
-erAsync(CurrentRequest.CollectionId, parentFolderId, CurrentRequest);
+            }
+
             private async Task SaveRequest()
-            {                    // Update the tab with the latest changes
-                // If this request came from a collection (has an Id and is in a tab), update it in its collectionx] = CurrentRequest.Clone();
+            {
+                // If this request came from a collection (has an Id and is in a tab), update it in its collection
                 if (ActiveTabIndex >= 0 && !string.IsNullOrEmpty(CurrentRequest.Id) && 
-                    !string.IsNullOrEmpty(CurrentRequest.CollectionId))   // Refresh collections
-                {Collections = (await CollectionService.GetCollectionsAsync()).ToList();
+                    !string.IsNullOrEmpty(CurrentRequest.CollectionId))
+                {
                     string parentFolderId = string.Empty;
                     
                     // Get the current parent folder ID if available
-                    // First try to find the parent folder by searching through the collections   // Request doesn't belong to a collection yet, show the save-as dialog
-                    var collection = Collections.FirstOrDefault(c => c.Id == CurrentRequest.CollectionId);       OpenSaveAsRequestModal();
-                    if (collection != null)    }
+                    // First try to find the parent folder by searching through the collections
+                    var collection = Collections.FirstOrDefault(c => c.Id == CurrentRequest.CollectionId);
+                    if (collection != null)
                     {
                         // Find the request in the collection or its folders to determine the parent folder
-                        bool found = false;/ Helper method to find a request within nested folders
-                        ction> folders, string requestId, ref string parentFolderId, ref bool found)
+                        bool found = false;
+                        
                         // Check if it's in the root of the collection
-                        if (collection.Requests.Any(r => r.Id == CurrentRequest.Id))ound the request
+                        if (collection.Requests.Any(r => r.Id == CurrentRequest.Id))
                         {
                             found = true;
                             // It's in root, so parentFolderId remains empty
-                        }/ Check if the request is in this folder
-                        Id == requestId))
+                        }
+                        
                         // If not found at the root, search in the folders
-                        if (!found)olderId = folder.Id;
-                        {   found = true;
-                            FindRequestInFolders(collection.Folders, CurrentRequest.Id, ref parentFolderId, ref found);    return;
+                        if (!found)
+                        {
+                            FindRequestInFolders(collection.Folders, CurrentRequest.Id, ref parentFolderId, ref found);
                         }
                     }
-                    / If not found, check nested folders
+                    
                     // Update request using SaveRequestToFolderAsync to maintain folder structure
                     await CollectionService.SaveRequestToFolderAsync(CurrentRequest.CollectionId, parentFolderId, CurrentRequest);
-   FindRequestInFolders(folder.Folders, requestId, ref parentFolderId, ref found);
-                    // Update the tab with the latest changes       if (found) return; // If found in a child folder, no need to continue searching
-                    OpenTabs[ActiveTabIndex] = CurrentRequest.Clone();       }
-                }
+
+                    // Update the tab with the latest changes
+                    OpenTabs[ActiveTabIndex] = CurrentRequest.Clone();
+
                     // Refresh collections
                     Collections = (await CollectionService.GetCollectionsAsync()).ToList();
                 }
                 else
-                {   newRequestName = CurrentRequest.Name ?? $"{CurrentRequest.Method} {CurrentRequest.Url}";
-                    // Request doesn't belong to a collection yet, show the save-as dialog                showSaveModal = true;
+                {
+                    // Request doesn't belong to a collection yet, show the save-as dialog
                     OpenSaveAsRequestModal();
                 }
-            }SaveModal = false;
+            }
             
             // Helper method to find a request within nested folders
             private void FindRequestInFolders(IEnumerable<Collection> folders, string requestId, ref string parentFolderId, ref bool found)
-            {electedCollectionId))
+            {
                 if (found) return; // Already found the request
-                   // TODO: Show error message
-                foreach (var folder in folders)                    return;
+                
+                foreach (var folder in folders)
                 {
                     // Check if the request is in this folder
-                    if (folder.Requests.Any(r => r.Id == requestId))var requestToSave = CurrentRequest.Clone();
+                    if (folder.Requests.Any(r => r.Id == requestId))
                     {
                         parentFolderId = folder.Id;
-                        found = true;r id (if any) to save under the correct folder structure
-                        return;tring parentFolderId = string.Empty;
+                        found = true;
+                        return;
                     }
                     
-                    // If not found, check nested folders   // Use the last folder in the navigation path as the parent folder
-                    if (folder.Folders != null && folder.Folders.Any())                    parentFolderId = navigationPath.Last().Id;
+                    // If not found, check nested folders
+                    if (folder.Folders != null && folder.Folders.Any())
                     {
                         FindRequestInFolders(folder.Folders, requestId, ref parentFolderId, ref found);
-                        if (found) return; // If found in a child folder, no need to continue searching                // Save the request to the specified collection and folder
-                    }ollectionService.SaveRequestToFolderAsync(selectedCollectionId, parentFolderId, requestToSave);
+                        if (found) return; // If found in a child folder, no need to continue searching
+                    }
                 }
-            }                // Refresh collections
-ait CollectionService.GetCollectionsAsync()).ToList();
+            }
+
             private void OpenSaveRequestModal()
-            {                CloseSaveModal();
+            {
                 newRequestName = CurrentRequest.Name ?? $"{CurrentRequest.Method} {CurrentRequest.Url}";
                 showSaveModal = true;
             }
 
-            private void CloseSaveModal() => showSaveModal = false;   newRequestName = CurrentRequest.Name ?? $"{CurrentRequest.Method} {CurrentRequest.Url}";
-                showSaveAsModal = true;
+            private void CloseSaveModal() => showSaveModal = false;
+
             private async Task SaveToCollection()
             {
-                if (string.IsNullOrWhiteSpace(selectedCollectionId))SaveAsModal = false;
+                if (string.IsNullOrWhiteSpace(selectedCollectionId))
                 {
                     // TODO: Show error message
                     return;
-                }electedCollectionId))
-
-                var requestToSave = CurrentRequest.Clone();   // TODO: Show error message
-                requestToSave.Name = newRequestName;                    return;
-                
-                // Store the parent folder id (if any) to save under the correct folder structure
-                string parentFolderId = string.Empty;                var requestToSave = CurrentRequest.Clone();
-                if (navigationPath.Any())
-                {
-                    // Use the last folder in the navigation path as the parent folderr id (if any) to save under the correct folder structure
-                    parentFolderId = navigationPath.Last().Id;tring parentFolderId = string.Empty;
                 }
 
-                // Save the request to the specified collection and folder   // Use the last folder in the navigation path as the parent folder
-                bool success = await CollectionService.SaveRequestToFolderAsync(selectedCollectionId, parentFolderId, requestToSave);                    parentFolderId = navigationPath.Last().Id;
+                var requestToSave = CurrentRequest.Clone();
+                requestToSave.Name = newRequestName;
+                
+                // Store the parent folder id (if any) to save under the correct folder structure
+                string parentFolderId = string.Empty;
+                if (navigationPath.Any())
+                {
+                    // Use the last folder in the navigation path as the parent folder
+                    parentFolderId = navigationPath.Last().Id;
+                }
+
+                // Save the request to the specified collection and folder
+                bool success = await CollectionService.SaveRequestToFolderAsync(selectedCollectionId, parentFolderId, requestToSave);
 
                 // Refresh collections
-                Collections = (await CollectionService.GetCollectionsAsync()).ToList();                // Save the request to the specified collection and folder
-ollectionService.SaveRequestToFolderAsync(selectedCollectionId, parentFolderId, requestToSave);
+                Collections = (await CollectionService.GetCollectionsAsync()).ToList();
+
                 CloseSaveModal();
-            }                // Refresh collections
-t CollectionService.GetCollectionsAsync()).ToList();
+            }
+
             private void OpenSaveAsRequestModal()
-            {                CloseSaveAsModal();
+            {
                 newRequestName = CurrentRequest.Name ?? $"{CurrentRequest.Method} {CurrentRequest.Url}";
                 showSaveAsModal = true;
             }
 
-            private void CloseSaveAsModal() => showSaveAsModal = false;e.Value?.ToString() ?? "";
+            private void CloseSaveAsModal() => showSaveAsModal = false;
 
-            private async Task SaveAsToCollection()   navigationPath.Clear();
-            {                currentFolders = currentCollection?.Folders?.ToList() ?? new List<Exman.Models.Collection>();
+            private async Task SaveAsToCollection()
+            {
                 if (string.IsNullOrWhiteSpace(selectedCollectionId))
                 {
-                    // TODO: Show error message()
+                    // TODO: Show error message
                     return;
-                }   navigationPath.Clear();
-                currentFolders = currentCollection?.Folders?.ToList() ?? new List<Exman.Models.Collection>();
+                }
+
                 var requestToSave = CurrentRequest.Clone();
                 requestToSave.Name = newRequestName;
 
                 // Store the parent folder id (if any) to save under the correct folder structure
-                string parentFolderId = string.Empty;   navigationPath = navigationPath.Take(index + 1).ToList();
-                if (navigationPath.Any())                currentFolders = navigationPath.Last().Folders?.ToList() ?? new List<Exman.Models.Collection>();
+                string parentFolderId = string.Empty;
+                if (navigationPath.Any())
                 {
                     // Use the last folder in the navigation path as the parent folder
-                    parentFolderId = navigationPath.Last().Id;xman.Models.Collection folder)
+                    parentFolderId = navigationPath.Last().Id;
                 }
-   navigationPath.Add(folder);
-                // Save the request to the specified collection and folder                currentFolders = folder.Folders?.ToList() ?? new List<Exman.Models.Collection>();
+
+                // Save the request to the specified collection and folder
                 bool success = await CollectionService.SaveRequestToFolderAsync(selectedCollectionId, parentFolderId, requestToSave);
 
                 // Refresh collections
                 Collections = (await CollectionService.GetCollectionsAsync()).ToList();
 
                 CloseSaveAsModal();
-            }y,  // Use empty string instead of null for new collections
-  Name = "",
+            }
+
             private void OnCollectionSelected(ChangeEventArgs e)
-            {   };
-                selectedCollectionId = e.Value?.ToString() ?? "";                showCollectionModal = true;
+            {
+                selectedCollectionId = e.Value?.ToString() ?? "";
                 currentCollection = Collections.FirstOrDefault(c => c.Id == selectedCollectionId);
                 navigationPath.Clear();
-                currentFolders = currentCollection?.Folders?.ToList() ?? new List<Exman.Models.Collection>(); => showCollectionModal = false;
+                currentFolders = currentCollection?.Folders?.ToList() ?? new List<Exman.Models.Collection>();
             }
 
             private void NavigateToRoot()
-            {tingCollection.Id))
+            {
                 navigationPath.Clear();
-                currentFolders = currentCollection?.Folders?.ToList() ?? new List<Exman.Models.Collection>();   // Create new collection
-            }await CollectionService.CreateCollectionAsync(editingCollection);
+                currentFolders = currentCollection?.Folders?.ToList() ?? new List<Exman.Models.Collection>();
+            }
 
             private void NavigateToPathIndex(int index)
             {
-                navigationPath = navigationPath.Take(index + 1).ToList();   // Update existing collection
-                currentFolders = navigationPath.Last().Folders?.ToList() ?? new List<Exman.Models.Collection>();                    await CollectionService.UpdateCollectionAsync(editingCollection);
+                navigationPath = navigationPath.Take(index + 1).ToList();
+                currentFolders = navigationPath.Last().Folders?.ToList() ?? new List<Exman.Models.Collection>();
             }
 
-            private void NavigateToFolder(Exman.Models.Collection folder)                // Refresh collections
-            {llectionService.GetCollectionsAsync()).ToList();
-                navigationPath.Add(folder);
-                currentFolders = folder.Folders?.ToList() ?? new List<Exman.Models.Collection>();                CloseCollectionModal();
-            }
-
-            private void OpenNewCollectionModal()ection collection)
+            private void NavigateToFolder(Exman.Models.Collection folder)
             {
-                editingCollection = new Exman.Models.Collection Exman.Models.Collection
+                navigationPath.Add(folder);
+                currentFolders = folder.Folders?.ToList() ?? new List<Exman.Models.Collection>();
+            }
+
+            private void OpenNewCollectionModal()
+            {
+                editingCollection = new Exman.Models.Collection
                 {
                     Id = string.Empty,  // Use empty string instead of null for new collections
-                    Name = "",  Name = collection.Name,
-                    Description = ""n.Description
-                };   };
-                showCollectionModal = true;                showCollectionModal = true;
+                    Name = "",
+                    Description = ""
+                };
+                showCollectionModal = true;
             }
 
-            private void CloseCollectionModal() => showCollectionModal = false;ionModal(string id, string name)
+            private void CloseCollectionModal() => showCollectionModal = false;
 
             private async Task SaveCollection()
-            {   collectionToDeleteName = name;
-                if (string.IsNullOrEmpty(editingCollection.Id))                showDeleteCollectionModal = true;
+            {
+                if (string.IsNullOrEmpty(editingCollection.Id))
                 {
                     // Create new collection
-                    await CollectionService.CreateCollectionAsync(editingCollection);al() => showDeleteCollectionModal = false;
+                    await CollectionService.CreateCollectionAsync(editingCollection);
                 }
                 else
                 {
                     // Update existing collection
                     await CollectionService.UpdateCollectionAsync(editingCollection);
-                }ool success = await CollectionService.DeleteCollectionAsync(collectionToDeleteId);
+                }
 
                 // Refresh collections
-                Collections = (await CollectionService.GetCollectionsAsync()).ToList();   // Refresh collections
-Collections = (await CollectionService.GetCollectionsAsync()).ToList();
+                Collections = (await CollectionService.GetCollectionsAsync()).ToList();
+
                 CloseCollectionModal();
             }
 
-            private void HandleEditCollection(Exman.Models.Collection collection)       // Handle error - could add a toast notification here
-            {                    }
+            private void HandleEditCollection(Exman.Models.Collection collection)
+            {
                 editingCollection = new Exman.Models.Collection
                 {
-                    Id = collection.Id,                CloseDeleteCollectionModal();
+                    Id = collection.Id,
                     Name = collection.Name,
                     Description = collection.Description
-                };equest, string CollectionId) data)
+                };
                 showCollectionModal = true;
-            }                // Check if the request is already open in a tab
-nTabs.FindIndex(tab => tab.Id == data.Request.Id);
+            }
+
             private void OpenDeleteCollectionModal(string id, string name)
             {
                 collectionToDeleteId = id;
-                collectionToDeleteName = name;   // Request is already open, make the tab active
-                showDeleteCollectionModal = true;SwitchToTab(existingTabIndex);
+                collectionToDeleteName = name;
+                showDeleteCollectionModal = true;
             }
 
             private void CloseDeleteCollectionModal() => showDeleteCollectionModal = false;
 
-            private async Task DeleteCollection()                    var requestClone = data.Request.Clone();
+            private async Task DeleteCollection()
             {
                 if (!string.IsNullOrEmpty(collectionToDeleteId))
-                {/ Ensure the body type is properly set based on content type
+                {
                     bool success = await CollectionService.DeleteCollectionAsync(collectionToDeleteId);
                     if (success)
-                    {dy.ContentType switch
+                    {
                         // Refresh collections
                         Collections = (await CollectionService.GetCollectionsAsync()).ToList();
-                    }ication/xml" or "text/html" => RequestBody.BodyType.Raw,
-                    else,
-                    {e.UrlEncoded,
+                    }
+                    else
+                    {
                         // Handle error - could add a toast notification here
-                    }  "application/octet-stream" => RequestBody.BodyType.Binary,
-                }       _ => RequestBody.BodyType.Raw // Default to Raw for other content types
-    };
+                    }
+                }
+
                 CloseDeleteCollectionModal();
             }
-   OpenTabs.Add(requestClone);
-            private async Task HandleSelectRequest((ApiRequest Request, string CollectionId) data)       SwitchToTab(OpenTabs.Count - 1);
-            {    }
+
+            private async Task HandleSelectRequest((ApiRequest Request, string CollectionId) data)
+            {
                 // Check if the request is already open in a tab
                 int existingTabIndex = OpenTabs.FindIndex(tab => tab.Id == data.Request.Id);
 
                 if (existingTabIndex >= 0)
-                {ex < OpenTabs.Count)
+                {
                     // Request is already open, make the tab active
-                    SwitchToTab(existingTabIndex);// Set active tab index
+                    SwitchToTab(existingTabIndex);
                 }
                 else
-                {// Update current request to reflect the selected tab
-                    // Open request in a new tab[tabIndex];
+                {
+                    // Open request in a new tab
                     var requestClone = data.Request.Clone();
                     requestClone.CollectionId = data.CollectionId;
-CurrentResponse = null;
+
                     // Ensure the body type is properly set based on content type
                     if (requestClone.Body != null)
-                    {/ Set the appropriate tab based on the request data
-                        requestClone.Body.Type = requestClone.Body.ContentType switch != null && CurrentRequest.Body.ContentType != "none")
+                    {
+                        requestClone.Body.Type = requestClone.Body.ContentType switch
                         {
                             "none" => RequestBody.BodyType.None,
                             "text/plain" or "application/json" or "application/javascript" or "application/xml" or "text/html" => RequestBody.BodyType.Raw,
-                            "multipart/form-data" => RequestBody.BodyType.FormData,aders.Count > 0)
+                            "multipart/form-data" => RequestBody.BodyType.FormData,
                             "application/x-www-form-urlencoded" => RequestBody.BodyType.UrlEncoded,
-                            "application/graphql" => RequestBody.BodyType.GraphQL,ActiveTab = "headers";
+                            "application/graphql" => RequestBody.BodyType.GraphQL,
                             "application/octet-stream" => RequestBody.BodyType.Binary,
                             _ => RequestBody.BodyType.Raw // Default to Raw for other content types
                         };
-                    }       ActiveTab = "params";
-                           }
-                    OpenTabs.Add(requestClone);    }
+                    }
+                    
+                    OpenTabs.Add(requestClone);
                     SwitchToTab(OpenTabs.Count - 1);
                 }
             }
             
-            private void SwitchToTab(int tabIndex)tabIndex < OpenTabs.Count)
+            private void SwitchToTab(int tabIndex)
             {
-                if (tabIndex >= 0 && tabIndex < OpenTabs.Count)// Remove the tab
+                if (tabIndex >= 0 && tabIndex < OpenTabs.Count)
                 {
                     // Set active tab index
-                    ActiveTabIndex = tabIndex;/ Adjust the active tab index
+                    ActiveTabIndex = tabIndex;
                     
                     // Update current request to reflect the selected tab
-                    CurrentRequest = OpenTabs[tabIndex];ed request
-                    ctiveTabIndex = -1;
+                    CurrentRequest = OpenTabs[tabIndex];
+                    
                     // Reset current response
                     CurrentResponse = null;
                     FormattedResponseBody = "";
                     
-                    // Set the appropriate tab based on the request datation<Exman.Models.KeyValuePair>(),
-                    if (CurrentRequest.Body != null && CurrentRequest.Body.ContentType != "none")leCollection<Exman.Models.KeyValuePair>(),
-                    {uthentication = new Authentication(),
+                    // Set the appropriate tab based on the request data
+                    if (CurrentRequest.Body != null && CurrentRequest.Body.ContentType != "none")
+                    {
                         ActiveTab = "body";
                     }
                     else if (CurrentRequest.Headers.Count > 0)
-                    {  FormData = new ObservableCollection<Exman.Models.KeyValuePair>(),
-                        ActiveTab = "headers";servableCollection<Exman.Models.KeyValuePair>()
-                    }  },
-                    else       Proxy = new ProxySettings()
+                    {
+                        ActiveTab = "headers";
+                    }
+                    else
                     {
                         ActiveTab = "params";
                     }
                 }
-            }ore or is the active tab, adjust the active tab index
-               ActiveTabIndex = Math.Max(0, ActiveTabIndex - 1);
-            private void CloseTab(int tabIndex)    SwitchToTab(ActiveTabIndex);
+            }
+            
+            private void CloseTab(int tabIndex)
             {
                 if (tabIndex >= 0 && tabIndex < OpenTabs.Count)
                 {
-                    // Remove the tab   CurrentResponse = null;
-                    OpenTabs.RemoveAt(tabIndex);       FormattedResponseBody = "";
-                        }
+                    // Remove the tab
+                    OpenTabs.RemoveAt(tabIndex);
+                    
                     // Adjust the active tab index
                     if (OpenTabs.Count == 0)
-                    {lectionId)
+                    {
                         // No tabs left, reset to unsaved request
-                        ActiveTabIndex = -1;   selectedCollectionId = collectionId;
-                        CurrentRequest = new ApiRequest    OpenSaveRequestModal();
+                        ActiveTabIndex = -1;
+                        CurrentRequest = new ApiRequest
                         {
                             Method = ApiHttpMethod.GET,
-                            Url = "",()
+                            Url = "",
                             QueryParameters = new ObservableCollection<Exman.Models.KeyValuePair>(),
-                            Headers = new ObservableCollection<Exman.Models.KeyValuePair>(),    await LoadEnvironmentVariables();
+                            Headers = new ObservableCollection<Exman.Models.KeyValuePair>(),
                             Authentication = new Authentication(),
                             Body = new RequestBody
                             {
                                 ContentType = "none",
                                 FormData = new ObservableCollection<Exman.Models.KeyValuePair>(),
                                 UrlEncodedData = new ObservableCollection<Exman.Models.KeyValuePair>()
-                            },   CurrentEnvironmentVariables = new List<Variable>();
-                            Proxy = new ProxySettings()    return;
+                            },
+                            Proxy = new ProxySettings()
                         };
                     }
-                    else if (ActiveTabIndex >= tabIndex)vironment))
+                    else if (ActiveTabIndex >= tabIndex)
                     {
-                        // If the removed tab is before or is the active tab, adjust the active tab index   CurrentEnvironmentVariables = cachedEnvironment.Variables.ToList();
-                        ActiveTabIndex = Math.Max(0, ActiveTabIndex - 1);    return;
+                        // If the removed tab is before or is the active tab, adjust the active tab index
+                        ActiveTabIndex = Math.Max(0, ActiveTabIndex - 1);
                         SwitchToTab(ActiveTabIndex);
                     }
-                    ar environment = await EnvironmentService.GetEnvironmentAsync(CurrentEnvironmentId);
+                    
                     // Reset current response
                     CurrentResponse = null;
-                    FormattedResponseBody = "";   CurrentEnvironmentVariables = environment.Variables.ToList();
-                }EnvironmentCache[CurrentEnvironmentId] = environment;
+                    FormattedResponseBody = "";
+                }
             }
             
             private void HandleAddRequest(string collectionId)
-            {       CurrentEnvironmentVariables = new List<Variable>();
-                selectedCollectionId = collectionId;    }
+            {
+                selectedCollectionId = collectionId;
                 OpenSaveRequestModal();
             }
             
             private async Task EnvironmentChanged()
-            {    CurrentRequest.QueryParameters.Add(new Exman.Models.KeyValuePair());
+            {
                 await LoadEnvironmentVariables();
             }
-            r param)
+            
             private async Task LoadEnvironmentVariables()
-            {    CurrentRequest.QueryParameters.Remove(param);
+            {
                 if (string.IsNullOrEmpty(CurrentEnvironmentId))
                 {
                     CurrentEnvironmentVariables = new List<Variable>();
                     return;
-                }    CurrentRequest.Headers.Add(new Exman.Models.KeyValuePair());
+                }
                 
                 if (EnvironmentCache.TryGetValue(CurrentEnvironmentId, out var cachedEnvironment))
-                {ValuePair header)
+                {
                     CurrentEnvironmentVariables = cachedEnvironment.Variables.ToList();
-                    return;    CurrentRequest.Headers.Remove(header);
+                    return;
                 }
                 
                 var environment = await EnvironmentService.GetEnvironmentAsync(CurrentEnvironmentId);
                 if (environment != null)
-                {    CurrentRequest.Body.UrlEncodedData.Add(new Exman.Models.KeyValuePair());
+                {
                     CurrentEnvironmentVariables = environment.Variables.ToList();
                     EnvironmentCache[CurrentEnvironmentId] = environment;
-                }luePair field)
+                }
                 else
-                {    CurrentRequest.Body.UrlEncodedData.Remove(field);
+                {
                     CurrentEnvironmentVariables = new List<Variable>();
                 }
-            }s(int statusCode)
+            }
             
             private void AddParam()
             {
                 CurrentRequest.QueryParameters.Add(new Exman.Models.KeyValuePair());
-            }rect",
-            00 => "client-error",
-            private void RemoveParam(Exman.Models.KeyValuePair param)  >= 500 => "server-error",
-            {       _ => "unknown"
-                CurrentRequest.QueryParameters.Remove(param);    };
+            }
+            
+            private void RemoveParam(Exman.Models.KeyValuePair param)
+            {
+                CurrentRequest.QueryParameters.Remove(param);
             }
             
             private void AddHeader()
             {
-                CurrentRequest.Headers.Add(new Exman.Models.KeyValuePair());   var contentTypeHeader = response.Headers.FirstOrDefault(h => h.Key.Equals("Content-Type", StringComparison.OrdinalIgnoreCase));
-            }    return contentTypeHeader?.Value ?? "text/plain";
+                CurrentRequest.Headers.Add(new Exman.Models.KeyValuePair());
+            }
             
             private void RemoveHeader(Exman.Models.KeyValuePair header)
             {
                 CurrentRequest.Headers.Remove(header);
-            }string.IsNullOrEmpty(CurrentResponse.Body))
+            }
             
-            private void AddUrlEncodedField()   FormattedResponseBody = "";
-            {    return;
+            private void AddUrlEncodedField()
+            {
                 CurrentRequest.Body.UrlEncodedData.Add(new Exman.Models.KeyValuePair());
             }
-            var contentType = GetContentType(CurrentResponse);
+            
             private void RemoveUrlEncodedField(Exman.Models.KeyValuePair field)
             {
-                CurrentRequest.Body.UrlEncodedData.Remove(field);pplication/json"))
+                CurrentRequest.Body.UrlEncodedData.Remove(field);
             }
-                   PrettifyResponseJson();
-            private string GetStatusClass(int statusCode)    }
+            
+            private string GetStatusClass(int statusCode)
             {
                 return statusCode switch
                 {
                     >= 200 and < 300 => "success",
-                    >= 300 and < 400 => "redirect",(string.IsNullOrWhiteSpace(CurrentRequest.Body.RawContent) || CurrentRequest.Body.ContentType != "application/json") return;
+                    >= 300 and < 400 => "redirect",
                     >= 400 and < 500 => "client-error",
                     >= 500 => "server-error",
                     _ => "unknown"
-                };   var jsonElement = JsonSerializer.Deserialize<JsonElement>(CurrentRequest.Body.RawContent);
-            }urrentRequest.Body.RawContent = JsonSerializer.Serialize(jsonElement, new JsonSerializerOptions { WriteIndented = true });
+                };
+            }
             
             private string GetContentType(ApiResponse response)
             {
-                var contentTypeHeader = response.Headers.FirstOrDefault(h => h.Key.Equals("Content-Type", StringComparison.OrdinalIgnoreCase));       // Not valid JSON, leave as is
-                return contentTypeHeader?.Value ?? "text/plain";    }
+                var contentTypeHeader = response.Headers.FirstOrDefault(h => h.Key.Equals("Content-Type", StringComparison.OrdinalIgnoreCase));
+                return contentTypeHeader?.Value ?? "text/plain";
             }
             
             private void FormatResponseBody()
             {
-                if (CurrentResponse == null || string.IsNullOrEmpty(CurrentResponse.Body))(CurrentResponse == null || string.IsNullOrWhiteSpace(CurrentResponse.Body)) return;
+                if (CurrentResponse == null || string.IsNullOrEmpty(CurrentResponse.Body))
                 {
                     FormattedResponseBody = "";
                     return;
-                }   var jsonElement = JsonSerializer.Deserialize<JsonElement>(CurrentResponse.Body);
-                ormattedResponseBody = JsonSerializer.Serialize(jsonElement, new JsonSerializerOptions { WriteIndented = true });
+                }
+                
                 var contentType = GetContentType(CurrentResponse);
                 FormattedResponseBody = CurrentResponse.Body;
                 
-                if (contentType.Contains("application/json"))   // Not valid JSON, leave as is
-                {       FormattedResponseBody = CurrentResponse.Body;
-                    PrettifyResponseJson();    }
+                if (contentType.Contains("application/json"))
+                {
+                    PrettifyResponseJson();
                 }
             }
             
             private void PrettifyJson()
             {
                 if (string.IsNullOrWhiteSpace(CurrentRequest.Body.RawContent) || CurrentRequest.Body.ContentType != "application/json") return;
-                   // Use JSRuntime to call JavaScript clipboard API
-                try       await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", FormattedResponseBody);
-                {                }
+                
+                try
+                {
                     var jsonElement = JsonSerializer.Deserialize<JsonElement>(CurrentRequest.Body.RawContent);
                     CurrentRequest.Body.RawContent = JsonSerializer.Serialize(jsonElement, new JsonSerializerOptions { WriteIndented = true });
                 }
                 catch
                 {
                     // Not valid JSON, leave as is
-                }   CurrentRequest.Body.ContentType == "text/plain" || 
-            }tion/json")
+                }
+            }
             
             private void PrettifyResponseJson()
             {
-                if (CurrentResponse == null || string.IsNullOrWhiteSpace(CurrentResponse.Body)) return;none")
+                if (CurrentResponse == null || string.IsNullOrWhiteSpace(CurrentResponse.Body)) return;
                 
                 try
                 {
-                    var jsonElement = JsonSerializer.Deserialize<JsonElement>(CurrentResponse.Body);pplication/json" && string.IsNullOrEmpty(CurrentRequest.Body.RawContent))
+                    var jsonElement = JsonSerializer.Deserialize<JsonElement>(CurrentResponse.Body);
                     FormattedResponseBody = JsonSerializer.Serialize(jsonElement, new JsonSerializerOptions { WriteIndented = true });
-                }   // Add empty JSON object as starting point
-                catch       CurrentRequest.Body.RawContent = "{\n  \n}";
+                }
+                catch
                 {
                     // Not valid JSON, leave as is
-                    FormattedResponseBody = CurrentResponse.Body; == "application/x-www-form-urlencoded")
+                    FormattedResponseBody = CurrentResponse.Body;
                 }
-            };
+            }
             
-            private async Task CopyResponseToClipboard()/ Add an empty field if none exist
-            {rlEncodedData.Count == 0)
+            private async Task CopyResponseToClipboard()
+            {
                 if (!string.IsNullOrEmpty(FormattedResponseBody))
-                {       AddUrlEncodedField();
-                    // Use JSRuntime to call JavaScript clipboard API       }
-                    await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", FormattedResponseBody);                }
+                {
+                    // Use JSRuntime to call JavaScript clipboard API
+                    await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", FormattedResponseBody);
                 }
             }
 
@@ -1443,282 +1409,280 @@ CurrentResponse = null;
             {
                 // Clear data when content type changes
                 if (CurrentRequest.Body.ContentType == "none" || 
-                    CurrentRequest.Body.ContentType == "text/plain" || " ||
-                    CurrentRequest.Body.ContentType == "application/json")ascript" ||
-                {||
-                    CurrentRequest.Body.UrlEncodedData.Clear();    CurrentRequest.Body.ContentType == "text/html") && 
+                    CurrentRequest.Body.ContentType == "text/plain" || 
+                    CurrentRequest.Body.ContentType == "application/json")
+                {
+                    CurrentRequest.Body.UrlEncodedData.Clear();
                     
                     if (CurrentRequest.Body.ContentType == "none")
-                    {    savedRawContent[CurrentRequest.Body.ContentType] = CurrentRequest.Body.RawContent;
+                    {
                         CurrentRequest.Body.RawContent = "";
                     }
-                    else if (CurrentRequest.Body.ContentType == "application/json" && string.IsNullOrEmpty(CurrentRequest.Body.RawContent))// Set the new content type
+                    else if (CurrentRequest.Body.ContentType == "application/json" && string.IsNullOrEmpty(CurrentRequest.Body.RawContent))
                     {
                         // Add empty JSON object as starting point
-                        CurrentRequest.Body.RawContent = "{\n  \n}";/ Set the appropriate BodyType enum value based on the content type
-                    }witch
+                        CurrentRequest.Body.RawContent = "{\n  \n}";
+                    }
                 }
                 else if (CurrentRequest.Body.ContentType == "application/x-www-form-urlencoded")
-                {ication/xml" or "text/html" => RequestBody.BodyType.Raw,
-                    CurrentRequest.Body.RawContent = "";,
-                    e.UrlEncoded,
+                {
+                    CurrentRequest.Body.RawContent = "";
+                    
                     // Add an empty field if none exist
-                    if (CurrentRequest.Body.UrlEncodedData.Count == 0)  "application/octet-stream" => RequestBody.BodyType.Binary,
-                    {    _ => RequestBody.BodyType.Raw // Default to Raw for other content types
+                    if (CurrentRequest.Body.UrlEncodedData.Count == 0)
+                    {
                         AddUrlEncodedField();
                     }
-                }/ Apply changes based on the new content type
-            }xt/plain" || contentType == "application/json" || contentType == "application/graphql" || contentType == "application/javascript" || contentType == "application/xml" || contentType == "text/html")
+                }
+            }
 
-            private void ChangeBodyType(string contentType)// Clear form data
+            private void ChangeBodyType(string contentType)
             {
                 // If we're switching from a raw type, save the content
-                if ((CurrentRequest.Body.ContentType == "text/plain" || / Set raw content type based on dropdown for raw
+                if ((CurrentRequest.Body.ContentType == "text/plain" || 
                      CurrentRequest.Body.ContentType == "application/json" ||
                      CurrentRequest.Body.ContentType == "application/graphql" ||
-                     CurrentRequest.Body.ContentType == "application/javascript" ||    CurrentRequest.Body.ContentType = rawContentType;
+                     CurrentRequest.Body.ContentType == "application/javascript" ||
                      CurrentRequest.Body.ContentType == "application/xml" ||
                      CurrentRequest.Body.ContentType == "text/html") && 
-                    !string.IsNullOrEmpty(CurrentRequest.Body.RawContent))/ Restore saved content if exists
-                {y.ContentType, out string savedContent))
+                    !string.IsNullOrEmpty(CurrentRequest.Body.RawContent))
+                {
                     savedRawContent[CurrentRequest.Body.ContentType] = CurrentRequest.Body.RawContent;
                 }
                 
-                // Set the new content typepe == "application/json" && string.IsNullOrEmpty(CurrentRequest.Body.RawContent))
+                // Set the new content type
                 CurrentRequest.Body.ContentType = contentType;
-                   // Initialize empty JSON if needed
-                // Set the appropriate BodyType enum value based on the content type       CurrentRequest.Body.RawContent = "{\n  \n}";
+                
+                // Set the appropriate BodyType enum value based on the content type
                 CurrentRequest.Body.Type = contentType switch
                 {
                     "none" => RequestBody.BodyType.None,
                     "text/plain" or "application/json" or "application/javascript" or "application/xml" or "text/html" => RequestBody.BodyType.Raw,
-                    "multipart/form-data" => RequestBody.BodyType.FormData,// For form data, we keep the raw content in case user switches back
+                    "multipart/form-data" => RequestBody.BodyType.FormData,
                     "application/x-www-form-urlencoded" => RequestBody.BodyType.UrlEncoded,
                     "application/graphql" => RequestBody.BodyType.GraphQL,
-                    "application/octet-stream" => RequestBody.BodyType.Binary,/ Add an empty field if none exist
-                    _ => RequestBody.BodyType.Raw // Default to Raw for other content typesrlEncodedData.Count == 0)
+                    "application/octet-stream" => RequestBody.BodyType.Binary,
+                    _ => RequestBody.BodyType.Raw // Default to Raw for other content types
                 };
-                       AddUrlEncodedField();
+                
                 // Apply changes based on the new content type
                 if (contentType == "text/plain" || contentType == "application/json" || contentType == "application/graphql" || contentType == "application/javascript" || contentType == "application/xml" || contentType == "text/html")
                 {
                     // Clear form data
-                    CurrentRequest.Body.UrlEncodedData.Clear();    // Don't clear the saved raw content, just hide it
+                    CurrentRequest.Body.UrlEncodedData.Clear();
                     
-                    // Set raw content type based on dropdown for raw   
-                    if (contentType == "text/plain")    StateHasChanged();
+                    // Set raw content type based on dropdown for raw
+                    if (contentType == "text/plain")
                     {
                         CurrentRequest.Body.ContentType = rawContentType;
-                    }tTypeChanged(ChangeEventArgs e)
+                    }
                     
-                    // Restore saved content if existse.Value == null)
+                    // Restore saved content if exists
                     if (savedRawContent.TryGetValue(CurrentRequest.Body.ContentType, out string savedContent))
-                    {    
-                        CurrentRequest.Body.RawContent = savedContent;;
+                    {
+                        CurrentRequest.Body.RawContent = savedContent;
                     }
                     else if (CurrentRequest.Body.ContentType == "application/json" && string.IsNullOrEmpty(CurrentRequest.Body.RawContent))
                     {
                         // Initialize empty JSON if needed
-                        CurrentRequest.Body.RawContent = "{\n  \n}";" ||
-                    }ascript" ||
-                }||
-                else if (contentType == "application/x-www-form-urlencoded")    CurrentRequest.Body.ContentType == "text/html") && 
+                        CurrentRequest.Body.RawContent = "{\n  \n}";
+                    }
+                }
+                else if (contentType == "application/x-www-form-urlencoded")
                 {
                     // For form data, we keep the raw content in case user switches back
-                    // but don't display it in the UI    savedRawContent[CurrentRequest.Body.ContentType] = CurrentRequest.Body.RawContent;
+                    // but don't display it in the UI
                     
                     // Add an empty field if none exist
                     if (CurrentRequest.Body.UrlEncodedData.Count == 0)
-                    {rawContentType = newRawContentType;
-                        AddUrlEncodedField();newRawContentType;
+                    {
+                        AddUrlEncodedField();
                     }
-                }/ Restore saved content if exists
-                else if (contentType == "none") out string? savedContent) && savedContent != null)
+                }
+                else if (contentType == "none")
                 {
                     // Don't clear the saved raw content, just hide it
                 }
-                = "application/json" && string.IsNullOrEmpty(CurrentRequest.Body.RawContent))
+                
                 StateHasChanged();
-            }   // Initialize empty JSON
-            .Body.RawContent = "{\n  \n}";
-            private void OnRawContentTypeChanged(ChangeEventArgs e)   }
-            {                StateHasChanged();
+            }
+            
+            private void OnRawContentTypeChanged(ChangeEventArgs e)
+            {
                 if (e.Value == null)
                     return;
-                    / Import Collection Dialog Methods
-                string newRawContentType = e.Value.ToString() ?? "text/plain";g()
+                    
+                string newRawContentType = e.Value.ToString() ?? "text/plain";
                 
-                // If changing from one raw type to another, save the contente;
-                if ((CurrentRequest.Body.ContentType == "text/plain" || ";
-                     CurrentRequest.Body.ContentType == "application/json" ||null;
+                // If changing from one raw type to another, save the content
+                if ((CurrentRequest.Body.ContentType == "text/plain" || 
+                     CurrentRequest.Body.ContentType == "application/json" ||
                      CurrentRequest.Body.ContentType == "application/graphql" ||
-                     CurrentRequest.Body.ContentType == "application/javascript" ||   importError = "";
-                     CurrentRequest.Body.ContentType == "application/xml" ||    StateHasChanged();
+                     CurrentRequest.Body.ContentType == "application/javascript" ||
+                     CurrentRequest.Body.ContentType == "application/xml" ||
                      CurrentRequest.Body.ContentType == "text/html") && 
                     !string.IsNullOrEmpty(CurrentRequest.Body.RawContent))
-                {g()
+                {
                     savedRawContent[CurrentRequest.Body.ContentType] = CurrentRequest.Body.RawContent;
-                }   showImportDialog = false;
-                    StateHasChanged();
+                }
+                
                 // Update the raw content type
                 rawContentType = newRawContentType;
-                CurrentRequest.Body.ContentType = newRawContentType;eChange(InputFileChangeEventArgs e)
+                CurrentRequest.Body.ContentType = newRawContentType;
                 
-                // Restore saved content if existsle;
-                if (savedRawContent.TryGetValue(newRawContentType, out string? savedContent) && savedContent != null)importFileName = e.File.Name;
+                // Restore saved content if exists
+                if (savedRawContent.TryGetValue(newRawContentType, out string? savedContent) && savedContent != null)
                 {
                     CurrentRequest.Body.RawContent = savedContent;
-                }/ If file is too large, show error
+                }
                 else if (newRawContentType == "application/json" && string.IsNullOrEmpty(CurrentRequest.Body.RawContent))
                 {
-                    // Initialize empty JSONrror = "File is too large. Maximum size is 5MB.";
-                    CurrentRequest.Body.RawContent = "{\n  \n}";   importFile = null;
-                }       return;
-                StateHasChanged();    }
+                    // Initialize empty JSON
+                    CurrentRequest.Body.RawContent = "{\n  \n}";
+                }
+                StateHasChanged();
             }
 
             // Import Collection Dialog Methods
             private void ShowImportDialog()
             {
                 showImportDialog = true;
-                importJsonText = "";return importFile != null && string.IsNullOrEmpty(importError);
+                importJsonText = "";
                 importFileName = null;
                 importFile = null;
                 importError = "";
-                StateHasChanged();       return !string.IsNullOrWhiteSpace(importJsonText);
-            }    }
+                StateHasChanged();
+            }
             
             private void CloseImportDialog()
-            { async Task ImportCollection()
+            {
                 showImportDialog = false;
                 StateHasChanged();
             }
-            null;
+            
             private async Task OnFileChange(InputFileChangeEventArgs e)
-            {mportFile != null)
+            {
                 importFile = e.File;
                 importFileName = e.File.Name;
-                importError = "";.OpenReadStream(5 * 1024 * 1024); // 5MB max
-                ew MemoryStream();
-                // If file is too large, show errorawait stream.CopyToAsync(ms);
+                importError = "";
+                
+                // If file is too large, show error
                 if (importFile.Size > 5 * 1024 * 1024) // 5MB limit
                 {
-                    importError = "File is too large. Maximum size is 5MB.";using var reader = new StreamReader(ms);
-                    importFile = null;er.ReadToEndAsync();
+                    importError = "File is too large. Maximum size is 5MB.";
+                    importFile = null;
                     return;
-                }   // Import the collection
-            }omJsonAsync(json);
+                }
+            }
             
-            private bool CanImport() && !string.IsNullOrWhiteSpace(importJsonText))
+            private bool CanImport()
             {
-                if (importTab == "file")   // Import from raw JSON
-                {    importedCollection = await CollectionService.ImportPostmanCollectionFromJsonAsync(importJsonText);
+                if (importTab == "file")
+                {
                     return importFile != null && string.IsNullOrEmpty(importError);
                 }
-                elsenull)
+                else
                 {
-                    return !string.IsNullOrWhiteSpace(importJsonText);// Refresh collections
-                } CollectionService.GetCollectionsAsync()).ToList();
-            }   
-            CloseImportDialog();
+                    return !string.IsNullOrWhiteSpace(importJsonText);
+                }
+            }
+            
             private async Task ImportCollection()
             {
                 try
-                {       importError = "Failed to import collection. Please check if the JSON is valid.";
+                {
                     Exman.Models.Collection? importedCollection = null;
                     
                     if (importTab == "file" && importFile != null)
                     {
-                        // Read the file content       importError = $"Error importing collection: {ex.Message}";
-                        using var stream = importFile.OpenReadStream(5 * 1024 * 1024); // 5MB max                }
+                        // Read the file content
+                        using var stream = importFile.OpenReadStream(5 * 1024 * 1024); // 5MB max
                         using var ms = new MemoryStream();
                         await stream.CopyToAsync(ms);
                         ms.Position = 0;
                         
-                        using var reader = new StreamReader(ms);   // This method doesn't need to do anything in C# code
-                        string json = await reader.ReadToEndAsync();                // The actual resizing logic is handled by JavaScript in sidebar-resizer.js
+                        using var reader = new StreamReader(ms);
+                        string json = await reader.ReadToEndAsync();
                         
                         // Import the collection
-                        importedCollection = await CollectionService.ImportPostmanCollectionFromJsonAsync(json);ing RequestId, string RequestName) data)
+                        importedCollection = await CollectionService.ImportPostmanCollectionFromJsonAsync(json);
                     }
-                    else if (importTab == "raw" && !string.IsNullOrWhiteSpace(importJsonText))est ID for deletion
-                    {d;
-                        // Import from raw JSONstId;
-                        importedCollection = await CollectionService.ImportPostmanCollectionFromJsonAsync(importJsonText);   requestToDeleteName = data.RequestName;
-                    }                showDeleteRequestModal = true;
+                    else if (importTab == "raw" && !string.IsNullOrWhiteSpace(importJsonText))
+                    {
+                        // Import from raw JSON
+                        importedCollection = await CollectionService.ImportPostmanCollectionFromJsonAsync(importJsonText);
+                    }
                     
                     if (importedCollection != null)
-                    {l()
+                    {
                         // Refresh collections
-                        Collections = (await CollectionService.GetCollectionsAsync()).ToList();                showDeleteRequestModal = false;
+                        Collections = (await CollectionService.GetCollectionsAsync()).ToList();
                         
                         CloseImportDialog();
                     }
                     else
-                    {Empty(requestToDeleteId))
+                    {
                         importError = "Failed to import collection. Please check if the JSON is valid.";
-                    }f the request being deleted is currently open
-                }nt tabIndex = OpenTabs.FindIndex(tab => tab.Id == requestToDeleteId);
+                    }
+                }
                 catch (Exception ex)
                 {
-                    importError = $"Error importing collection: {ex.Message}";                        CloseTab(tabIndex);
+                    importError = $"Error importing collection: {ex.Message}";
                 }
             }
-// Delete the request using the DeleteRequestFromFolderAsync method
-            private void OnResizerMouseDown(MouseEventArgs e)e.DeleteRequestFromFolderAsync(selectedCollectionId, requestToDeleteId);
+
+            private void OnResizerMouseDown(MouseEventArgs e)
             {
-                // This method doesn't need to do anything in C# code   // Refresh collections
-                // The actual resizing logic is handled by JavaScript in sidebar-resizer.js                    Collections = (await CollectionService.GetCollectionsAsync()).ToList();
+                // This method doesn't need to do anything in C# code
+                // The actual resizing logic is handled by JavaScript in sidebar-resizer.js
             }
 
-            private void HandleDeleteRequest((string CollectionId, string RequestId, string RequestName) data)   // Close the modal
-            {                showDeleteRequestModal = false;
+            private void HandleDeleteRequest((string CollectionId, string RequestId, string RequestName) data)
+            {
                 // Store the collection ID and request ID for deletion
                 selectedCollectionId = data.CollectionId;
-                requestToDeleteId = data.RequestId;ightingMode(string contentType)
+                requestToDeleteId = data.RequestId;
                 requestToDeleteName = data.RequestName;
                 showDeleteRequestModal = true;
             }
-",
-            private void CloseDeleteRequestModal() "application/javascript",
-            {tion/xml",
-                showDeleteRequestModal = false;text/html",
-            }  "text/plain" => "text/plain",
-       _ => "plaintext"
-            private async Task ConfirmDeleteRequest()       };
 
+            private void CloseDeleteRequestModal()
+            {
+                showDeleteRequestModal = false;
+            }
 
+            private async Task ConfirmDeleteRequest()
+            {
+                if (!string.IsNullOrEmpty(selectedCollectionId) && !string.IsNullOrEmpty(requestToDeleteId))
+                {
+                    // Close the tab if the request being deleted is currently open
+                    int tabIndex = OpenTabs.FindIndex(tab => tab.Id == requestToDeleteId);
+                    if (tabIndex >= 0)
+                    {
+                        CloseTab(tabIndex);
+                    }
 
+                    // Delete the request using the DeleteRequestFromFolderAsync method
+                    await CollectionService.DeleteRequestFromFolderAsync(selectedCollectionId, requestToDeleteId);
+                    
+                    // Refresh collections
+                    Collections = (await CollectionService.GetCollectionsAsync()).ToList();
+                }
 
+                // Close the modal
+                showDeleteRequestModal = false;
+            }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        }            }                };                    _ => "plaintext"                    "text/plain" => "text/plain",                    "text/html" => "text/html",                    "application/xml" => "application/xml",                    "application/javascript" => "application/javascript",                    "application/json" => "application/json",                {                return contentType switch            {            private string GetSyntaxHighlightingMode(string contentType)            }                showDeleteRequestModal = false;                // Close the modal                }                    Collections = (await CollectionService.GetCollectionsAsync()).ToList();                    // Refresh collections                                        await CollectionService.DeleteRequestFromFolderAsync(selectedCollectionId, requestToDeleteId);                    // Delete the request using the DeleteRequestFromFolderAsync method                    }                        CloseTab(tabIndex);                    {                    if (tabIndex >= 0)                    int tabIndex = OpenTabs.FindIndex(tab => tab.Id == requestToDeleteId);                    // Close the tab if the request being deleted is currently open                {                if (!string.IsNullOrEmpty(selectedCollectionId) && !string.IsNullOrEmpty(requestToDeleteId))            {            }
+            private string GetSyntaxHighlightingMode(string contentType)
+            {
+                return contentType switch
+                {
+                    "application/json" => "application/json",
+                    "application/javascript" => "application/javascript",
+                    "application/xml" => "application/xml",
+                    "text/html" => "text/html",
+                    "text/plain" => "text/plain",
+                    _ => "plaintext"
+                };
+            }
         }
