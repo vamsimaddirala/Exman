@@ -1,0 +1,98 @@
+.variable-input-container {
+    position: relative;
+    width: 100%;
+}
+
+.CodeMirror {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 14px;
+}
+
+.CodeMirror-placeholder {
+    color: #999;
+}
+
+/* Style for variables in the editor */
+.cm-variable {
+    color: #0066cc;
+    background-color: rgba(0, 102, 204, 0.1);
+    border-radius: 2px;
+    padding: 0 2px;
+}
+
+/* Variable tooltip styles */
+.cm-variable-tooltip {
+    font-family: sans-serif;
+    pointer-events: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.tooltip-value {
+    font-weight: bold;
+    color: #0066cc;
+}
+
+/* CodeMirror Hint styles */
+.CodeMirror-hints {
+    position: absolute;
+    z-index: 1000;
+    overflow: hidden;
+    list-style: none;
+    margin: 0;
+    padding: 2px;
+    border-radius: 3px;
+    border: 1px solid silver;
+    background: white;
+    font-size: 14px;
+    font-family: inherit;
+    max-height: 20em;
+    overflow-y: auto;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.CodeMirror-hint {
+    margin: 0;
+    padding: 4px 8px;
+    border-radius: 2px;
+    white-space: pre;
+    cursor: pointer;
+}
+
+.CodeMirror-hint-active {
+    background-color: #08f;
+    color: white;
+}
+
+/* Single-line specific styles */
+.variable-input-container:not(.multiline) .CodeMirror {
+    height: 28px !important;
+    min-height: 28px !important;
+    max-height: 28px !important;
+    line-height: 28px;
+}
+
+.variable-input-container:not(.multiline) .CodeMirror-scroll {
+    overflow-y: hidden !important;
+    margin-bottom: -30px; /* Hides bottom scrollbar */
+}
+
+.variable-input-container:not(.multiline) .CodeMirror-lines {
+    padding: 0;
+}
+
+.variable-input-container:not(.multiline) .CodeMirror pre.CodeMirror-line,
+.variable-input-container:not(.multiline) .CodeMirror pre.CodeMirror-line-like {
+    padding: 0 4px;
+}
+
+.variable-input-container:not(.multiline) .CodeMirror-gutter-wrapper {
+    height: 28px;
+}
+
+/* Hide scrollbars but maintain scrolling ability */
+.variable-input-container:not(.multiline) .CodeMirror-hscrollbar,
+.variable-input-container:not(.multiline) .CodeMirror-vscrollbar {
+    display: none !important;
+}

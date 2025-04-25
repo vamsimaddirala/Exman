@@ -1,0 +1,181 @@
+@using Exman.Models
+@using Exman.Services
+@using System.Text.RegularExpressions
+@using System.Timers
+@inject IJSRuntime JSRuntime
+@inject IEnvironmentService EnvironmentService
+@implements IAsyncDisposable
+
+<div id="@containerId" class="variable-input-container @(IsMultiline ? "multiline" : "") @CssClass">
+    <div @ref="editorElement" style="width:100%;"></div>
+</div>
+
+@code {
+    [Parameter]
+    public string Value { get; set; } = string.Empty;
+
+    [Parameter]
+    public EventCallback<string> ValueChanged { get; set; }
+
+    [Parameter]
+    public bool IsMultiline { get; set; } = false;
+
+    [Parameter]
+    public int Rows { get; set; } = 5;
+
+    [Parameter]
+    public string Placeholder { get; set; } = "";
+    
+    [Parameter]
+    public string CssClass { get; set; } = "";
+
+    [Parameter]
+    public string SyntaxMode { get; set; } = "application/json"; // Default syntax highlighting mode
+
+    private ElementReference editorElement;
+    private List<Variable> Variables = new List<Variable>();
+    private DotNetObjectReference<VariableInputComponent>? objRef;
+    private string containerId = $"variable-input-{Guid.NewGuid().ToString("N")}";
+    private RequestEnvironment? activeEnvironment;
+    private bool editorInitialized = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadEnvironmentVariables();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Create a reference to this component instance for JS interop
+            objRef = DotNetObjectReference.Create(this);
+            
+            // Initialize CodeMirror editor
+            await InitializeCodeMirrorEditor();
+        }
+        else if (!string.IsNullOrEmpty(Value) && !editorInitialized)
+        {
+            // Set the editor content if Value is available but editor wasn't ready before
+            await JSRuntime.InvokeVoidAsync("codeMirrorInterop.setContent", containerId, Value);
+            editorInitialized = true;
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (objRef != null)
+            {
+                // Clean up JavaScript references
+                await JSRuntime.InvokeVoidAsync("codeMirrorInterop.dispose", containerId);
+                objRef.Dispose();
+                objRef = null;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error disposing VariableInputComponent: {ex.Message}");
+        }
+    }
+
+    private async Task LoadEnvironmentVariables()
+    {
+        try
+        {
+            activeEnvironment = await EnvironmentService.GetActiveEnvironmentAsync();
+            if (activeEnvironment != null)
+            {
+                Variables = activeEnvironment.Variables
+                    .Where(v => v.Enabled)
+                    .ToList();
+            }
+            else
+            {
+                Variables = new List<Variable>();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading environment variables: {ex.Message}");
+            Variables = new List<Variable>();
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (editorInitialized)
+        {
+            // Update editor content when Value parameter changes
+            await JSRuntime.InvokeVoidAsync("codeMirrorInterop.setContent", containerId, Value);
+        }
+    }
+
+    private async Task InitializeCodeMirrorEditor()
+    {
+        Dictionary<string, string> variableDictionary = new Dictionary<string, string>();
+        try
+        {
+            // Create variable dictionary to pass to JavaScript
+            variableDictionary = Variables.ToDictionary(v => v.Key, v => v.Value);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error initializing CodeMirror: {ex}");
+        }
+         
+        try
+        {
+            // Initialize CodeMirror with options
+            var options = new
+            {
+                lineNumbers = IsMultiline,
+                lineWrapping = true,
+                mode = IsMultiline ? SyntaxMode : "variable", // Use syntax highlighting when multiline
+                placeholder = Placeholder,
+                viewportMargin = IsMultiline ? 10 : 1,
+                singleLine = !IsMultiline,
+                minHeight = IsMultiline ? Rows * 20 : 28, // Appropriate height based on mode
+                maxHeight = !IsMultiline ? 28 : (int?) null, // Higher max height for multiline
+                variables = variableDictionary
+            };
+
+            await JSRuntime.InvokeVoidAsync("codeMirrorInterop.initialize", 
+                objRef, 
+                containerId, 
+                editorElement, 
+                options, 
+                Value);
+                
+            editorInitialized = true;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error initializing CodeMirror: {ex}");
+        }
+    }
+
+    [JSInvokable]
+    public async Task OnEditorChanged(string newValue)
+    {
+        Value = newValue;
+        await ValueChanged.InvokeAsync(newValue);
+    }
+    
+    [JSInvokable]
+    public string GetVariableValue(string variableName)
+    {
+        var variable = Variables.FirstOrDefault(v => v.Key == variableName);
+        return variable?.Value ?? "No value defined";
+    }
+    
+    [JSInvokable]
+    public string[] GetMatchingVariables(string prefix)
+    {
+        return Variables
+            .Where(v => v.Key.Contains(prefix, StringComparison.OrdinalIgnoreCase))
+            .Select(v => v.Key)
+            .ToArray();
+    }
+}

@@ -1,4 +1,6 @@
-﻿@inherits LayoutComponentBase
+﻿@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.JSInterop
+@inherits LayoutComponentBase
 
 <div class="page">
     <div class="sidebar-menu">
@@ -15,3 +17,13 @@
         </article>
     </main>
 </div>
+
+@code {
+    [Inject] 
+    public IJSRuntime JSRuntime { get; set; } = default!;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // We've moved the variable highlighting initialization to the VariableInputComponent
+    }
+}

@@ -1,0 +1,109 @@
+.variable-input-container {
+    position: relative;
+    width: 100%;
+}
+
+.variable-input-field {
+    width: 100%;
+    background-color: transparent;
+    position: relative;
+    z-index: 2;
+    color: transparent;
+    caret-color: var(--text-color, #333);
+}
+
+.highlighted-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+    padding: inherit;
+    color: var(--text-color, #333);
+    overflow: hidden;
+    pointer-events: auto; /* Changed from none to auto to allow mouse events */
+}
+
+.variable-input-container.multiline .highlighted-content {
+    white-space: pre-wrap;
+}
+
+.variable-highlight {
+    background-color: rgba(var(--variable-highlight-color, 255, 220, 100), 0.3);
+    border-radius: 3px;
+    padding: 0 2px;
+    color: var(--variable-text-color, #000);
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-block; /* Added to make sure the element is properly sized */
+    position: relative; /* Added to establish positioning context */
+    pointer-events: auto; /* Ensure this element can receive mouse events */
+    z-index: 10; /* Make sure it's above other content */
+}
+
+.variable-dropdown {
+    position: absolute;
+    background-color: var(--dropdown-bg, #fff);
+    border: 1px solid var(--border-color, #ccc);
+    border-radius: 4px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    max-height: 200px;
+    overflow-y: auto;
+    min-width: 250px;
+    max-width: 400px;
+}
+
+.variable-dropdown-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border-color-light, #eee);
+}
+
+.variable-dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.variable-dropdown-item:hover,
+.variable-dropdown-item.selected {
+    background-color: var(--hover-bg, #f0f0f0);
+}
+
+.variable-name {
+    font-weight: bold;
+    color: var(--variable-name-color, #4a6baf);
+}
+
+.variable-value {
+    color: var(--variable-value-color, #6c757d);
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.variable-tooltip {
+    position: fixed; /* Changed from absolute to fixed for better positioning */
+    background-color: var(--tooltip-bg, #333);
+    color: var(--tooltip-color, #fff);
+    padding: 6px 10px;
+    border-radius: 4px;
+    z-index: 10000; /* Ensure it's above everything */
+    font-size: 0.85rem;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    max-width: 300px;
+    white-space: nowrap;
+}
+
+.variable-tooltip::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: 10px;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-bottom: 5px solid var(--tooltip-bg, #333);
+}

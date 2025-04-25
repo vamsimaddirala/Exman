@@ -11,7 +11,7 @@ html, body {
     padding: 0;
     overflow: hidden;
     color: #333;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
 }
 
 /* 
@@ -433,7 +433,7 @@ main {
 }
 
 .method-container {
-    width: 80px;
+    width: 130px;
 }
 
 .method-select {
@@ -448,7 +448,7 @@ main {
 
 .url-input {
     flex-grow: 1;
-    padding: 6px 10px;
+    padding: 0px;
     border: 1px solid #ccc;
     border-radius: 4px;
     font-family: monospace;
@@ -853,10 +853,42 @@ main {
     min-height: 120px;
     font-family: monospace;
     font-size: 13px;
-    padding: 12px;
+    padding: 2px;
     border: 1px solid #ddd;
     border-radius: 3px;
     resize: vertical;
+}
+
+/* CodeMirror custom styles */
+.CodeMirror {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 13px;
+    height: auto !important;
+    min-height: 120px;
+}
+
+.CodeMirror-scroll {
+    min-height: 120px;
+    max-height: 60vh;
+    overflow-y: auto !important;
+}
+
+.variable-input-container.multiline .CodeMirror {
+    height: auto !important;
+    min-height: 200px;
+}
+
+.variable-input-container.multiline .CodeMirror-scroll {
+    min-height: 200px;
+    overflow-y: scroll !important;
+    overflow-x: auto !important;
+}
+
+/* Ensure proper padding at the bottom of the editor content */
+.CodeMirror-lines {
+    padding-bottom: 16px !important;
 }
 
 /* 
