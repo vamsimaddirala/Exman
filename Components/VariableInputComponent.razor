@@ -32,6 +32,10 @@
     [Parameter]
     public string SyntaxMode { get; set; } = "application/json"; // Default syntax highlighting mode
 
+    // Fixed height values for the editor
+    private const int FIXED_MULTILINE_MIN_HEIGHT = 150; // Fixed min height for multiline, regardless of rows
+    private const int SINGLELINE_HEIGHT = 28;
+
     private ElementReference editorElement;
     private List<Variable> Variables = new List<Variable>();
     private DotNetObjectReference<VariableInputComponent>? objRef;
@@ -136,8 +140,8 @@
                 placeholder = Placeholder,
                 viewportMargin = IsMultiline ? 10 : 1,
                 singleLine = !IsMultiline,
-                minHeight = IsMultiline ? Rows * 20 : 28, // Appropriate height based on mode
-                maxHeight = !IsMultiline ? 28 : (int?) null, // Higher max height for multiline
+                minHeight = IsMultiline ? FIXED_MULTILINE_MIN_HEIGHT : SINGLELINE_HEIGHT, // Always use fixed height
+                maxHeight = !IsMultiline ? SINGLELINE_HEIGHT : (int?) null, // Higher max height for multiline
                 variables = variableDictionary
             };
 

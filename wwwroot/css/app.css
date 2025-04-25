@@ -204,12 +204,21 @@ main {
 
 /* Sidebar resizer */
 .sidebar-resizer {
-    width: 2px;
+    width: 4px;
     cursor: ew-resize;
     background-color: #e0e0e0;
     transition: background-color 0.2s ease;
 }
 
+.request-response-resizer {
+    height: 2px;
+    cursor: ns-resize;
+    background-color: #e0e0e0;
+    transition: background-color 0.2s ease;
+}
+
+.request-response-resizer:hover, 
+.request-response-resizer.active,
 .sidebar-resizer:hover, 
 .sidebar-resizer.active {
     background-color: #FF6C37; /* Postman orange */
@@ -421,6 +430,7 @@ main {
     flex-direction: column;
     background-color: #fff;
     overflow: hidden;
+    min-height: 0; /* Critical for nested flexbox */
 }
 
 /* URL bar */
@@ -430,7 +440,7 @@ main {
     align-items: center;
     gap: 8px;
     border-bottom: 1px solid #e0e0e0;
-}
+    }
 
 .method-container {
     width: 130px;
@@ -508,7 +518,6 @@ main {
     display: flex;
     flex-direction: column;
     overflow-y: auto;
-    border-bottom: 1px solid #e0e0e0;
 }
 
 .tabs {
@@ -850,11 +859,10 @@ main {
 
 .body-editor {
     width: 100%;
-    min-height: 120px;
+    min-height: 40px;
     font-family: monospace;
     font-size: 13px;
     padding: 2px;
-    border: 1px solid #ddd;
     border-radius: 3px;
     resize: vertical;
 }
@@ -876,12 +884,12 @@ main {
 }
 
 .variable-input-container.multiline .CodeMirror {
-    height: auto !important;
-    min-height: 200px;
+    min-height: 20px;
 }
 
 .variable-input-container.multiline .CodeMirror-scroll {
     min-height: 200px;
+    max-height: 60vh;
     overflow-y: scroll !important;
     overflow-x: auto !important;
 }
@@ -901,6 +909,7 @@ main {
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    min-height: 0; /* Critical for proper flexbox behavior */
 }
 
 .response-header {
@@ -959,6 +968,9 @@ main {
     overflow: auto;
     flex-grow: 1;
     background-color: #fff;
+    display: flex;
+    flex-direction: column;
+    min-height: 0; /* Critical for proper flexbox behavior */
 }
 
 .response-body-header {

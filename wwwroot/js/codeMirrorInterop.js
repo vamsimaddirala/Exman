@@ -75,6 +75,23 @@ window.codeMirrorInterop = {
                     change.cancel();
                 }
             });
+        } else {
+            // For multiline mode, dynamically adjust height based on requestSection
+            this.adjustEditorHeight(editor, containerId);
+            
+            // Add resize event listener to adjust height when window resizes
+            window.addEventListener('resize', () => {
+                this.adjustEditorHeight(editor, containerId);
+            });
+            
+            // Also trigger adjustment when the request-response resize handle is used
+            const resizer = document.querySelector('.request-response-resizer');
+            if (resizer) {
+                const observer = new MutationObserver(() => {
+                    this.adjustEditorHeight(editor, containerId);
+                });
+                observer.observe(resizer, { attributes: true });
+            }
         }
 
         // Store editor instance and variables
@@ -96,6 +113,28 @@ window.codeMirrorInterop = {
         this.setupAutocomplete(containerId);
     },
 
+    adjustEditorHeight: function(editor, containerId) {
+        if (!editor) return;
+        
+        const requestSection = document.querySelector('.request-section');
+        const isMultiline = editor.getWrapperElement().closest('.variable-input-container.multiline');
+        
+        if (requestSection && isMultiline) {
+            // Get available height in request section
+            const requestSectionHeight = requestSection.offsetHeight;
+            
+            // Calculate a reasonable max height based on request section, but ensuring some padding
+            const otherElementsHeight = 120; // Approximate height of other elements in the section
+            const maxHeight = Math.max(150, requestSectionHeight - otherElementsHeight);
+            
+            // Set the max height on the scroller
+            editor.getScrollerElement().style.maxHeight = maxHeight + 'px';
+            
+            // Refresh editor to update its internal size measurements
+            editor.refresh();
+        }
+    },
+
     setContent: function (containerId, content) {
         const editorInstance = this.editors[containerId];
         if (editorInstance && editorInstance.editor) {
@@ -112,6 +151,12 @@ window.codeMirrorInterop = {
             const editor = this.editors[containerId].editor;
             if (editor) {
                 editor.off("change");
+                
+                // Remove resize event listener if we added one
+                window.removeEventListener('resize', () => {
+                    this.adjustEditorHeight(editor, containerId);
+                });
+                
                 editor.toTextArea(); // Convert back to textarea if needed
             }
             
