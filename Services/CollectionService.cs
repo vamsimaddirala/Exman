@@ -51,6 +51,7 @@ namespace Exman.Services
                         
                         if (collection != null)
                         {
+                            SetRootCollectionIdRecursive(collection, collection.Id);
                             collections.Add(collection);
                         }
                     }
@@ -62,6 +63,18 @@ namespace Exman.Services
             }
             
             return collections;
+        }
+
+        private void SetRootCollectionIdRecursive(Collection collection, string rootId)
+        {
+            foreach (var req in collection.Requests)
+            {
+                req.RootCollectionId = rootId;
+            }
+            foreach (var folder in collection.Folders)
+            {
+                SetRootCollectionIdRecursive(folder, rootId);
+            }
         }
         
         public async Task<Collection?> GetCollectionAsync(string id)

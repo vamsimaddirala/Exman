@@ -333,7 +333,9 @@ namespace Exman.Services
                         var formUrlEncoded = new List<KeyValuePair<string, string>>();
                         foreach (var item in request.Body.FormData.Where(f => f.Enabled))
                         {
-                            formUrlEncoded.Add(new KeyValuePair<string, string>(item.Key, item.Value));
+                            // Process variables in form values - replace {{variable}} with actual values
+                            string processedValue = _environmentService.ProcessString(item.Value);
+                            formUrlEncoded.Add(new KeyValuePair<string, string>(item.Key, processedValue));
                         }
                         httpRequest.Content = new FormUrlEncodedContent(formUrlEncoded);
                         break;

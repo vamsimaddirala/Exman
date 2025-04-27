@@ -67,6 +67,18 @@
         </div>
 
         <!-- Request URL bar -->
+        <div class="request-path-container">
+            
+            @if (!string.IsNullOrEmpty(CurrentRequest?.CollectionId))
+            {
+                <span class="collection-path">@GetCollectionPath(CurrentRequest)</span>
+            }
+            <input type="text" class="request-name-input" placeholder="Request Name" @bind="CurrentRequest.Name" />
+            <div class="path-actions">
+                <button class="save-button" title="Save" @onclick="SaveRequest">Save</button>
+                <button class="save-as-button" title="Save As" @onclick="OpenSaveAsRequestModal">Save As</button>
+            </div>
+        </div>
         <div class="url-bar">
             <div class="method-container">
                 <select class="method-select" @bind="CurrentRequest.Method">
@@ -88,8 +100,6 @@
             </div>
             <div class="actions-container">
                 <button class="send-button" @onclick="SendRequest">Send</button>
-                <button class="save-button" @onclick="SaveRequest">Save</button>
-                <button class="save-as-button" @onclick="OpenSaveAsRequestModal">Save As</button>
             </div>
         </div>
 
@@ -293,7 +303,12 @@
                                                     <tr>
                                                         <td><input type="checkbox" checked /></td>
                                                         <td><input type="text" @bind="field.Key" /></td>
-                                                        <td><input type="text" @bind="field.Value" /></td>
+                                                        <td>
+                                                            <VariableInputComponent 
+                                                                @bind-Value="field.Value" 
+                                                                Placeholder="Enter value" 
+                                                                CssClass="form-urlencoded-value" />
+                                                        </td>
                                                         <td><input type="text" placeholder="Description" /></td>
                                                         <td><button class="remove-button" @onclick="() => RemoveUrlEncodedField(field)">×</button></td>
                                                     </tr>
@@ -1701,4 +1716,20 @@
         // This method doesn't need to do anything in C# code
         // The actual resizing logic is handled by JavaScript in request-response-resizer.js
     }
+
+    private string GetCollectionPath(ApiRequest request)
+    {
+        var collection = Collections.FirstOrDefault(c => c.Id == request.RootCollectionId);
+        if (collection == null) return string.Empty;
+
+        var path = collection.Name;
+        var folder = collection.Folders.FirstOrDefault(f => f.Requests.Any(r => r.Id == request.Id));
+        while (folder != null)
+        {
+            path += $" > {folder.Name}";
+            folder = folder.Folders.FirstOrDefault(f => f.Requests.Any(r => r.Id == request.Id));
         }
+
+        return path + " > ";
+    }
+}
