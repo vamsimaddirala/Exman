@@ -500,7 +500,6 @@ main {
 }
 
 .method-container {
-    width: 130px;
     min-width: 90px;
     flex-shrink: 0;
 }
@@ -527,7 +526,6 @@ main {
 }
 
 .environment-container {
-    width: 180px;
     min-width: 120px;
     flex-shrink: 0;
 }
